@@ -42,12 +42,20 @@ jobs:
       - name: Restore locked dependencies
         run: dotnet restore ChromaTray.Tests/ChromaTray.Tests.csproj --locked-mode
       - name: Run full Windows suite
+        env:
+          CHROMATRAY_UI_PREVIEW_DIR: '${{ github.workspace }}/artifacts/ui-preview'
         run: dotnet test ChromaTray.Tests/ChromaTray.Tests.csproj -c Release --no-restore --logger 'console;verbosity=normal' --logger trx --results-directory artifacts/tests/windows
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: windows-test-results
           path: artifacts/tests/windows/*.trx
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-ui-preview
+          path: artifacts/ui-preview/*.png
           if-no-files-found: warn
 
   release:

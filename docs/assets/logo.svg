@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="ChromaTray">
-  <rect width="64" height="64" rx="18" fill="#18181c"/>
-  <circle cx="22" cy="22" r="17" fill="#3b82f6"/>
-  <circle cx="42" cy="26" r="17" fill="#10b981"/>
-  <circle cx="32" cy="44" r="17" fill="#f43f5e" stroke="#fff" stroke-width="2"/>
+  <rect width="64" height="64" rx="18" fill="#0e1016"/>
+  <circle cx="22" cy="22" r="17" fill="#b5a6ff"/>
+  <circle cx="42" cy="26" r="17" fill="#74e1c1"/>
+  <circle cx="32" cy="44" r="17" fill="#ff99a6" stroke="#fff" stroke-width="2"/>
 </svg>

@@ -1,8 +1,8 @@
-using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using System.Windows.Forms;
+using ChromaTray.Forms.Controls;
 using ChromaTray.Models;
+using ChromaTray.Services;
 
 namespace ChromaTray.Forms;
 
@@ -11,74 +11,105 @@ public class ScreenOverlayForm : Form
     private readonly CaptureMode _mode;
     private readonly Bitmap _screenSnapshot;
     private readonly Rectangle _virtualBounds;
-
+    private readonly Rectangle[] _displayBounds;
+    private readonly Action<Point> _moveCursor;
     private Point _cursorPos;
     private Point _dragStart;
-    private bool _isDragging = false;
+    private bool _isDragging;
 
     public Color? PickedPointColor { get; private set; }
     public Bitmap? PickedRegionBitmap { get; private set; }
+    internal Point SelectedScreenPoint => new(_cursorPos.X + _virtualBounds.X, _cursorPos.Y + _virtualBounds.Y);
 
-    public ScreenOverlayForm(CaptureMode mode)
+    public ScreenOverlayForm(CaptureMode mode) : this(mode, CaptureDesktop()) { }
+
+    private ScreenOverlayForm(CaptureMode mode, (Bitmap Bitmap, Rectangle Bounds, Rectangle[] Displays) desktop)
+        : this(mode, desktop.Bitmap, desktop.Bounds, desktop.Displays) { }
+
+    // The overlay owns the supplied snapshot. Injection allows Windows tests to
+    // exercise real key routing and painting without capturing a user's desktop.
+    internal ScreenOverlayForm(CaptureMode mode, Bitmap snapshot, Rectangle virtualBounds,
+        Rectangle[] displayBounds, Action<Point>? moveCursor = null, Point? initialScreenPosition = null)
     {
         _mode = mode;
-        _virtualBounds = SystemInformation.VirtualScreen;
-
-        _screenSnapshot = new Bitmap(_virtualBounds.Width, _virtualBounds.Height, PixelFormat.Format32bppArgb);
-        try
-        {
-            using var g = Graphics.FromImage(_screenSnapshot);
-            g.CopyFromScreen(_virtualBounds.Location, Point.Empty, _virtualBounds.Size);
-        }
-        catch { _screenSnapshot.Dispose(); throw; }
-
+        _screenSnapshot = snapshot;
+        _virtualBounds = virtualBounds;
+        _displayBounds = displayBounds;
+        _moveCursor = moveCursor ?? (point => Cursor.Position = point);
+        var start = initialScreenPosition ?? Cursor.Position;
+        if (!displayBounds.Any(display => display.Contains(start))) start = displayBounds[0].Location;
+        _cursorPos = new Point(start.X - virtualBounds.X, start.Y - virtualBounds.Y);
         AutoScaleMode = AutoScaleMode.None;
         FormBorderStyle = FormBorderStyle.None;
         StartPosition = FormStartPosition.Manual;
-        Bounds = _virtualBounds;
+        Bounds = virtualBounds;
         TopMost = true;
         DoubleBuffered = true;
         Cursor = Cursors.Cross;
         KeyPreview = true;
         ShowInTaskbar = false;
-        _cursorPos = new Point(Cursor.Position.X - _virtualBounds.X, Cursor.Position.Y - _virtualBounds.Y);
+        AccessibleName = mode == CaptureMode.Point ? "Point picker. Arrow keys move one pixel. Enter selects. Escape cancels." : "Region picker. Drag to select. Escape cancels.";
     }
 
-    protected override void OnKeyDown(KeyEventArgs e)
+    private static (Bitmap, Rectangle, Rectangle[]) CaptureDesktop()
     {
-        if (e.KeyCode == Keys.Escape)
+        var bounds = SystemInformation.VirtualScreen;
+        var bitmap = new Bitmap(bounds.Width, bounds.Height, PixelFormat.Format32bppArgb);
+        try
         {
-            DialogResult = DialogResult.Cancel;
-            Close();
+            using var graphics = Graphics.FromImage(bitmap);
+            graphics.CopyFromScreen(bounds.Location, Point.Empty, bounds.Size);
+            return (bitmap, bounds, Screen.AllScreens.Select(screen => screen.Bounds).ToArray());
         }
-        base.OnKeyDown(e);
+        catch { bitmap.Dispose(); throw; }
     }
+
+    // Arrow keys and Enter are dialog/navigation keys in WinForms. Handle them
+    // here, before default focus traversal, rather than relying on KeyDown.
+    protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+    {
+        var key = keyData & Keys.KeyCode;
+        if (key == Keys.Escape) { CancelCapture(); return true; }
+        if (_mode == CaptureMode.Point)
+        {
+            if (key == Keys.Enter) { ConfirmPoint(); return true; }
+            (int dx, int dy) = key switch
+            {
+                Keys.Left => (-1, 0), Keys.Right => (1, 0), Keys.Up => (0, -1), Keys.Down => (0, 1), _ => (0, 0)
+            };
+            if (dx != 0 || dy != 0)
+            {
+                var next = PixelNavigator.Move(SelectedScreenPoint, dx, dy, _displayBounds);
+                _cursorPos = new Point(next.X - _virtualBounds.X, next.Y - _virtualBounds.Y);
+                _moveCursor(next);
+                Invalidate();
+                return true;
+            }
+        }
+        return base.ProcessCmdKey(ref msg, keyData);
+    }
+
+    private void ConfirmPoint()
+    {
+        PickedPointColor = _screenSnapshot.GetPixel(_cursorPos.X, _cursorPos.Y);
+        DialogResult = DialogResult.OK;
+        Close();
+    }
+
+    private void CancelCapture() { DialogResult = DialogResult.Cancel; Close(); }
 
     protected override void OnMouseDown(MouseEventArgs e)
     {
-        if (e.Button == MouseButtons.Right)
-        {
-            DialogResult = DialogResult.Cancel;
-            Close();
-            return;
-        }
-
+        if (e.Button == MouseButtons.Right) { CancelCapture(); return; }
         if (e.Button == MouseButtons.Left)
         {
-            if (_mode == CaptureMode.Point)
-            {
-                int x = Math.Clamp(e.X, 0, _screenSnapshot.Width - 1);
-                int y = Math.Clamp(e.Y, 0, _screenSnapshot.Height - 1);
-                PickedPointColor = _screenSnapshot.GetPixel(x, y);
-                DialogResult = DialogResult.OK;
-                Close();
-            }
+            UpdatePointer(e.Location);
+            if (_mode == CaptureMode.Point) ConfirmPoint();
             else
             {
                 _isDragging = true;
                 Capture = true;
-                _dragStart = e.Location;
-                _cursorPos = e.Location;
+                _dragStart = _cursorPos;
                 Invalidate();
             }
         }
@@ -87,30 +118,30 @@ public class ScreenOverlayForm : Form
 
     protected override void OnMouseMove(MouseEventArgs e)
     {
-        _cursorPos = e.Location;
+        UpdatePointer(e.Location);
         Invalidate();
         base.OnMouseMove(e);
     }
+
+    private void UpdatePointer(Point point) => _cursorPos = new(
+        Math.Clamp(point.X, 0, _screenSnapshot.Width - 1), Math.Clamp(point.Y, 0, _screenSnapshot.Height - 1));
 
     protected override void OnMouseUp(MouseEventArgs e)
     {
         if (_mode == CaptureMode.Region && _isDragging && e.Button == MouseButtons.Left)
         {
+            UpdatePointer(e.Location);
             _isDragging = false;
             Capture = false;
-            var sel = GetNormalizedRect(_dragStart, e.Location);
-
-            sel.Intersect(new Rectangle(0, 0, _screenSnapshot.Width, _screenSnapshot.Height));
-            if (sel.Width > 2 && sel.Height > 2)
+            var selection = GetNormalizedRect(_dragStart, _cursorPos);
+            selection.Intersect(new Rectangle(Point.Empty, _screenSnapshot.Size));
+            if (selection.Width > 2 && selection.Height > 2)
             {
-                PickedRegionBitmap = _screenSnapshot.Clone(sel, PixelFormat.Format32bppArgb);
+                PickedRegionBitmap = _screenSnapshot.Clone(selection, PixelFormat.Format32bppArgb);
                 DialogResult = DialogResult.OK;
                 Close();
             }
-            else
-            {
-                Invalidate();
-            }
+            else Invalidate();
         }
         base.OnMouseUp(e);
     }
@@ -119,123 +150,137 @@ public class ScreenOverlayForm : Form
     {
         var g = e.Graphics;
         g.DrawImageUnscaled(_screenSnapshot, 0, 0);
-
-        using var dimBrush = new SolidBrush(Color.FromArgb(115, 0, 0, 0));
-
+        using var dim = new SolidBrush(Color.FromArgb(_mode == CaptureMode.Point ? 55 : 110, StudioTheme.Canvas));
+        if (_mode == CaptureMode.Region && _isDragging)
+        {
+            var selected = GetNormalizedRect(_dragStart, _cursorPos);
+            using var outside = new Region(ClientRectangle);
+            outside.Exclude(selected);
+            g.FillRegion(dim, outside);
+            using var border = new Pen(StudioTheme.Mint, 2);
+            g.DrawRectangle(border, selected);
+            string size = $"{selected.Width} × {selected.Height} px";
+            var badge = new Rectangle(selected.X, Math.Max(8, selected.Y - 34), 172, 28);
+            DrawCard(g, badge, 7);
+            TextRenderer.DrawText(g, size, StudioTheme.Mono, badge, StudioTheme.Mint,
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+        }
+        else g.FillRectangle(dim, ClientRectangle);
         if (_mode == CaptureMode.Point)
         {
-            g.FillRectangle(dimBrush, 0, 0, Width, Height);
-            DrawMagnifierLoupe(g, _cursorPos);
+            DrawCrosshair(g);
+            DrawMagnifier(g);
         }
-        else if (_mode == CaptureMode.Region)
+        DrawHint(g);
+    }
+
+    private void DrawCrosshair(Graphics g)
+    {
+        using var shadow = new Pen(Color.FromArgb(180, 0, 0, 0), 3);
+        using var light = new Pen(Color.White, 1);
+        int x = _cursorPos.X, y = _cursorPos.Y;
+        foreach (var pen in new[] { shadow, light })
         {
-            if (_isDragging)
-            {
-                var sel = GetNormalizedRect(_dragStart, _cursorPos);
-                using var region = new Region(new Rectangle(0, 0, Width, Height));
-                region.Exclude(sel);
-                g.FillRegion(dimBrush, region);
-
-                using var borderPen = new Pen(Color.FromArgb(16, 185, 129), 2f);
-                g.DrawRectangle(borderPen, sel);
-
-                string sizeText = $"{sel.Width} × {sel.Height} px";
-                using var badgeFont = new Font("Consolas", 10f, FontStyle.Bold);
-                var textSize = g.MeasureString(sizeText, badgeFont);
-                var badgeRect = new RectangleF(sel.X, Math.Max(4, sel.Y - textSize.Height - 6), textSize.Width + 12, textSize.Height + 4);
-                using var badgeBg = new SolidBrush(Color.FromArgb(220, 20, 20, 25));
-                g.FillRectangle(badgeBg, badgeRect);
-                g.DrawString(sizeText, badgeFont, Brushes.White, badgeRect.X + 6, badgeRect.Y + 2);
-            }
-            else
-            {
-                g.FillRectangle(dimBrush, 0, 0, Width, Height);
-                DrawTopHintBanner(g, "Click and drag to select a screen rectangle (Press ESC or Right-Click to cancel)");
-            }
+            g.DrawLine(pen, x - 16, y, x - 5, y);
+            g.DrawLine(pen, x + 5, y, x + 16, y);
+            g.DrawLine(pen, x, y - 16, x, y - 5);
+            g.DrawLine(pen, x, y + 5, x, y + 16);
         }
     }
 
-    private void DrawMagnifierLoupe(Graphics g, Point cursor)
+    private void DrawMagnifier(Graphics g)
     {
-        DrawTopHintBanner(g, "Click any pixel to inspect its color (Press ESC or Right-Click to cancel)");
-
-        int cx = Math.Clamp(cursor.X, 0, _screenSnapshot.Width - 1);
-        int cy = Math.Clamp(cursor.Y, 0, _screenSnapshot.Height - 1);
-        Color c = _screenSnapshot.GetPixel(cx, cy);
-
-        int loupeSize = 132;
-        int zoomRadius = 5;
-        int lx = cursor.X + 24;
-        int ly = cursor.Y + 24;
-
-        var monitor = GetCursorMonitorBounds();
-        if (lx + loupeSize + 155 > monitor.Right) lx = cursor.X - loupeSize - 160;
-        if (ly + loupeSize + 8 > monitor.Bottom) ly = cursor.Y - loupeSize - 12;
-        lx = Math.Clamp(lx, monitor.Left + 4, Math.Max(monitor.Left + 4, monitor.Right - loupeSize - 155));
-        ly = Math.Clamp(ly, monitor.Top + 4, Math.Max(monitor.Top + 4, monitor.Bottom - loupeSize - 8));
-
-        var srcRect = new Rectangle(cx - zoomRadius, cy - zoomRadius, zoomRadius * 2 + 1, zoomRadius * 2 + 1);
-        var destRect = new Rectangle(lx, ly, loupeSize, loupeSize);
-
-        var oldMode = g.InterpolationMode;
-        var oldOffset = g.PixelOffsetMode;
-        g.InterpolationMode = InterpolationMode.NearestNeighbor;
-        g.PixelOffsetMode = PixelOffsetMode.Half;
-
-        using var bgBrush = new SolidBrush(Color.FromArgb(24, 24, 28));
-        g.FillRectangle(bgBrush, lx - 4, ly - 4, loupeSize + 155, loupeSize + 8);
-        g.DrawImage(_screenSnapshot, destRect, srcRect, GraphicsUnit.Pixel);
-
-        g.InterpolationMode = oldMode;
-        g.PixelOffsetMode = oldOffset;
-
-        int cell = loupeSize / (zoomRadius * 2 + 1);
-        var centerCell = new Rectangle(lx + zoomRadius * cell, ly + zoomRadius * cell, cell, cell);
-        using var crosshairPen = new Pen(Color.Red, 2f);
-        g.DrawRectangle(crosshairPen, centerCell);
-        g.DrawRectangle(Pens.White, destRect);
-
-        int infoX = lx + loupeSize + 10;
-        using var swatchBrush = new SolidBrush(c);
-        g.FillRectangle(swatchBrush, infoX, ly, 130, 32);
-        g.DrawRectangle(Pens.White, infoX, ly, 130, 32);
-
-        using var fontBold = new Font("Consolas", 11f, FontStyle.Bold);
-        using var fontReg = new Font("Consolas", 9.5f);
-        g.DrawString($"#{c.R:X2}{c.G:X2}{c.B:X2}", fontBold, Brushes.White, infoX, ly + 40);
-        g.DrawString($"R:{c.R} G:{c.G} B:{c.B}", fontReg, Brushes.LightGray, infoX, ly + 64);
-        g.DrawString($"X:{cx + _virtualBounds.X} Y:{cy + _virtualBounds.Y}", fontReg, Brushes.Gray, infoX, ly + 86);
+        int S(int value) => (int)Math.Round(value * DeviceDpi / 96f);
+        int width = S(346), height = S(268), cell = S(14), gridSize = cell * 11;
+        var monitor = GetSelectionMonitorBounds();
+        int x = _cursorPos.X + S(30), y = _cursorPos.Y + S(30);
+        if (x + width + S(12) > monitor.Right) x = _cursorPos.X - width - S(30);
+        if (y + height + S(12) > monitor.Bottom) y = _cursorPos.Y - height - S(30);
+        x = Math.Clamp(x, monitor.Left + S(12), Math.Max(monitor.Left + S(12), monitor.Right - width - S(12)));
+        y = Math.Clamp(y, monitor.Top + S(12), Math.Max(monitor.Top + S(12), monitor.Bottom - height - S(12)));
+        DrawCard(g, new Rectangle(x, y, width, height), S(14));
+        TextRenderer.DrawText(g, "PRECISION PICKER", StudioTheme.Strong, new Rectangle(x + S(16), y + S(12), S(300), S(24)), StudioTheme.Accent);
+        int gx = x + S(16), gy = y + S(46);
+        // Explicit cells keep the center exactly aligned at all desktop edges.
+        for (int row = 0; row < 11; row++)
+            for (int col = 0; col < 11; col++)
+            {
+                int px = _cursorPos.X + col - 5, py = _cursorPos.Y + row - 5;
+                var global = new Point(px + _virtualBounds.X, py + _virtualBounds.Y);
+                bool visible = px >= 0 && py >= 0 && px < _screenSnapshot.Width && py < _screenSnapshot.Height && _displayBounds.Any(display => display.Contains(global));
+                using var brush = new SolidBrush(visible ? _screenSnapshot.GetPixel(px, py) : StudioTheme.Border);
+                g.FillRectangle(brush, gx + col * cell, gy + row * cell, cell, cell);
+            }
+        using var grid = new Pen(Color.FromArgb(30, Color.White));
+        for (int i = 0; i <= 11; i++)
+        {
+            g.DrawLine(grid, gx + i * cell, gy, gx + i * cell, gy + gridSize);
+            g.DrawLine(grid, gx, gy + i * cell, gx + gridSize, gy + i * cell);
+        }
+        var center = new Rectangle(gx + 5 * cell, gy + 5 * cell, cell, cell);
+        using var outer = new Pen(Color.White, S(3));
+        using var inner = new Pen(StudioTheme.Canvas, 1);
+        g.DrawRectangle(outer, center);
+        g.DrawRectangle(inner, center);
+        Color color = _screenSnapshot.GetPixel(_cursorPos.X, _cursorPos.Y);
+        int ix = x + S(188);
+        using var swatch = new SolidBrush(color);
+        using var swatchPath = StudioTheme.Round(new Rectangle(ix, gy, S(140), S(46)), S(7));
+        g.FillPath(swatch, swatchPath);
+        TextRenderer.DrawText(g, $"#{color.R:X2}{color.G:X2}{color.B:X2}", StudioTheme.Strong,
+            new Rectangle(ix, gy + S(58), S(140), S(26)), StudioTheme.Text);
+        TextRenderer.DrawText(g, $"{color.R}, {color.G}, {color.B}", StudioTheme.Mono,
+            new Rectangle(ix, gy + S(88), S(140), S(24)), StudioTheme.Muted);
+        TextRenderer.DrawText(g, $"X {SelectedScreenPoint.X}\nY {SelectedScreenPoint.Y}", StudioTheme.Small,
+            new Rectangle(ix, gy + S(119), S(140), S(40)), StudioTheme.Muted, TextFormatFlags.Left | TextFormatFlags.NoPrefix);
+        using var divider = new Pen(StudioTheme.Border);
+        g.DrawLine(divider, x + S(16), y + S(215), x + width - S(16), y + S(215));
+        TextRenderer.DrawText(g, "↑ ↓ ← →  1 px", StudioTheme.Small, new Rectangle(x + S(16), y + S(229), S(140), S(24)), StudioTheme.Accent);
+        TextRenderer.DrawText(g, "Enter  Pick   ·   Esc  Cancel", StudioTheme.Small,
+            new Rectangle(x + S(146), y + S(229), S(184), S(24)), StudioTheme.Text, TextFormatFlags.Right | TextFormatFlags.NoPrefix);
     }
 
-    private void DrawTopHintBanner(Graphics g, string text)
+    private void DrawHint(Graphics g)
     {
-        using var font = new Font("Segoe UI Semibold", 11f);
-        var size = g.MeasureString(text, font);
-        var monitor = GetCursorMonitorBounds();
-        float bx = monitor.Left + (monitor.Width - size.Width - 32) / 2f;
-        float by = monitor.Top + 24f;
-        using var bg = new SolidBrush(Color.FromArgb(210, 20, 20, 26));
-        g.FillRectangle(bg, bx, by, size.Width + 32, size.Height + 16);
-        g.DrawString(text, font, Brushes.White, bx + 16, by + 8);
+        int S(int value) => (int)Math.Round(value * DeviceDpi / 96f);
+        var monitor = GetSelectionMonitorBounds();
+        int width = Math.Min(S(720), monitor.Width - S(32));
+        var rect = new Rectangle(monitor.Left + (monitor.Width - width) / 2, monitor.Top + S(20), width, S(48));
+        DrawCard(g, rect, S(12));
+        string title = _mode == CaptureMode.Point ? "PICK POINT" : "SCAN REGION";
+        string hint = _mode == CaptureMode.Point ? "Arrow keys  1 px   ·   Enter / Click  Pick   ·   Esc  Cancel" : "Drag to select an area   ·   Esc / Right-click  Cancel";
+        TextRenderer.DrawText(g, title, StudioTheme.Strong, new Rectangle(rect.X + S(16), rect.Y, S(120), rect.Height),
+            _mode == CaptureMode.Point ? StudioTheme.Accent : StudioTheme.Mint, TextFormatFlags.VerticalCenter);
+        TextRenderer.DrawText(g, hint, StudioTheme.Small, new Rectangle(rect.X + S(144), rect.Y, Math.Max(0, rect.Width - S(160)), rect.Height), StudioTheme.Text,
+            TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
     }
 
-    private static Rectangle GetNormalizedRect(Point p1, Point p2) =>
-        new(Math.Min(p1.X, p2.X), Math.Min(p1.Y, p2.Y), Math.Abs(p1.X - p2.X), Math.Abs(p1.Y - p2.Y));
-
-    private Rectangle GetCursorMonitorBounds()
+    private static void DrawCard(Graphics g, Rectangle rect, int radius = 14)
     {
-        var bounds = Screen.FromPoint(Cursor.Position).Bounds;
+        var previous = g.SmoothingMode;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        using var path = StudioTheme.Round(rect, radius);
+        using var fill = new SolidBrush(StudioTheme.Surface);
+        using var border = new Pen(StudioTheme.Border);
+        g.FillPath(fill, path);
+        g.DrawPath(border, path);
+        g.SmoothingMode = previous;
+    }
+
+    private Rectangle GetSelectionMonitorBounds()
+    {
+        var bounds = _displayBounds.FirstOrDefault(display => display.Contains(SelectedScreenPoint));
+        if (bounds.IsEmpty) bounds = _displayBounds[0];
         bounds.Offset(-_virtualBounds.X, -_virtualBounds.Y);
         return bounds;
     }
 
+    private static Rectangle GetNormalizedRect(Point start, Point end) =>
+        new(Math.Min(start.X, end.X), Math.Min(start.Y, end.Y), Math.Abs(start.X - end.X), Math.Abs(start.Y - end.Y));
+
     protected override void Dispose(bool disposing)
     {
-        if (disposing)
-        {
-            _screenSnapshot.Dispose();
-            PickedRegionBitmap?.Dispose();
-        }
+        if (disposing) { _screenSnapshot.Dispose(); PickedRegionBitmap?.Dispose(); }
         base.Dispose(disposing);
     }
 }

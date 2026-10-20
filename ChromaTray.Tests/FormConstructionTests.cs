@@ -5,6 +5,7 @@ using Xunit;
 
 namespace ChromaTray.Tests;
 
+[Collection("Desktop UI")]
 public class FormConstructionTests
 {
     [Fact]
