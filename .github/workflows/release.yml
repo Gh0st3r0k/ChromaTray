@@ -1,0 +1,100 @@
+name: Build, test & release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*.*.*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  core-tests:
+    name: Core algorithms (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Restore locked dependencies
+        run: dotnet restore ChromaTray.Core.Tests/ChromaTray.Core.Tests.csproj --locked-mode
+      - name: Test color math, palette histogram and exports
+        run: dotnet test ChromaTray.Core.Tests/ChromaTray.Core.Tests.csproj -c Release --no-restore --logger trx --results-directory artifacts/tests/core
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: core-test-results
+          path: artifacts/tests/core/*.trx
+          if-no-files-found: warn
+
+  windows-tests:
+    name: Windows build & diagnostic tests
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Restore locked dependencies
+        run: dotnet restore ChromaTray.Tests/ChromaTray.Tests.csproj --locked-mode
+      - name: Run full Windows suite
+        run: dotnet test ChromaTray.Tests/ChromaTray.Tests.csproj -c Release --no-restore --logger 'console;verbosity=normal' --logger trx --results-directory artifacts/tests/windows
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-test-results
+          path: artifacts/tests/windows/*.trx
+          if-no-files-found: warn
+
+  release:
+    name: Publish Windows x64 executables
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [core-tests, windows-tests]
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Build standalone and lightweight executables
+        shell: pwsh
+        run: |
+          $version = $env:GITHUB_REF_NAME -replace '^v', ''
+          dotnet publish ChromaTray.csproj -c Release -r win-x64 --self-contained true -p:Version=$version -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None -p:DebugSymbols=false -o artifacts/standalone
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet publish ChromaTray.csproj -c Release -r win-x64 --self-contained false -p:Version=$version -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o artifacts/lightweight
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Move-Item artifacts/standalone/ChromaTray.exe artifacts/ChromaTray-win-x64-standalone.exe
+          Move-Item artifacts/lightweight/ChromaTray.exe artifacts/ChromaTray-win-x64-lightweight.exe
+      - name: Generate SHA-256 checksums
+        shell: pwsh
+        run: |
+          Set-Location artifacts
+          $lines = Get-ChildItem -Filter '*.exe' | Sort-Object Name | ForEach-Object {
+            $hash = (Get-FileHash -Path $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            "$hash  $($_.Name)"
+          }
+          [IO.File]::WriteAllLines((Join-Path $PWD 'SHA256SUMS.txt'), $lines, [Text.UTF8Encoding]::new($false))
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+          files: |
+            artifacts/ChromaTray-win-x64-standalone.exe
+            artifacts/ChromaTray-win-x64-lightweight.exe
+            artifacts/SHA256SUMS.txt
+          body: |
+            **Windows 10/11 · x64**
+
+            - **standalone.exe** — includes .NET 8; no separate runtime installation.
+            - **lightweight.exe** — requires the x64 .NET 8 Desktop Runtime.
+            - **SHA256SUMS.txt** — checksums for the executables.
+
+            See the README for controls and the Russian local setup guide.

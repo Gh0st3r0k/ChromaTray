@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <AssemblyName>ChromaTray</AssemblyName>
+    <ApplicationIcon>assets/ChromaTray.ico</ApplicationIcon>
+    <Description>Screen color picker and region palette inspector for Windows.</Description>
+    <Authors>Kostiantyn Zaitsev</Authors>
+    <RepositoryUrl>https://github.com/Gh0st3r0k/ChromaTray</RepositoryUrl>
+    <!-- Single-file publishing adds SDK packages and a RID. Keep its lock separate
+         so publishing cannot invalidate the ordinary build/test dependency lock. -->
+    <NuGetLockFilePath Condition="'$(PublishSingleFile)' == 'true'">$(MSBuildProjectDirectory)/obj/publish-$(RuntimeIdentifier)-$(SelfContained).packages.lock.json</NuGetLockFilePath>
+    <RootNamespace>ChromaTray</RootNamespace>
+    <!-- Exclude the unit test subfolder from the main executable compilation -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);ChromaTray.Tests/**;ChromaTray.Core.Tests/**</DefaultItemExcludes>
+  </PropertyGroup>
+
+</Project>
