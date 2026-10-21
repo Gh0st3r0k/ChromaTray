@@ -44,6 +44,7 @@ public class MainDashboardForm : Form
     private readonly DpiStackPanel _dashboardLayout;
     private readonly DpiStackPanel _wordmark;
     private readonly DpiStackPanel _paletteLayout;
+    private readonly DpiStackPanel _paletteHeader;
     private readonly SurfacePanel _paletteCard;
     private readonly TableLayoutPanel _workspaceTabs;
     private readonly StudioButton _paletteTab;
@@ -155,7 +156,7 @@ public class MainDashboardForm : Form
         };
         // Give this option its own full-width row. An AutoSize column beside a
         // long palette title could place it outside the visible card.
-        var paletteHeader = StudioTheme.Stack((_lblPaletteCount, 24), (_chkGroupSimilar, 28));
+        _paletteHeader = StudioTheme.Stack((_lblPaletteCount, 24), (_chkGroupSimilar, 28));
         _paletteStrip = new PaletteStrip { Name = "PaletteOverview", Margin = new Padding(0, 10, 0, 10) };
 
         _colorListView = new PaletteGrid { Name = "PaletteTable", Dock = DockStyle.Fill, Margin = Padding.Empty };
@@ -184,7 +185,7 @@ public class MainDashboardForm : Form
         exportRow.Controls.Add(_cmbExportFormat, 0, 0);
         exportRow.Controls.Add(exportButton, 1, 0);
         _paletteLayout = StudioTheme.Stack(
-            (paletteHeader, 56), (_paletteStrip, 32), (_colorListView, -1),
+            (_paletteHeader, 56), (_paletteStrip, 32), (_colorListView, -1),
             (StudioTheme.Label("Select a shade to explore its formats. Double-click to copy.", StudioTheme.Small, StudioTheme.Muted), 32),
             (exportRow, 52));
         _paletteCard.Controls.Add(_paletteLayout);
@@ -294,7 +295,9 @@ public class MainDashboardForm : Form
         _btnRegion.Description = compact ? "" : "Turn any part of your screen into a palette.";
         _btnPoint.Invalidate();
         _btnRegion.Invalidate();
-        _paletteLayout.SetRowHeight(0, 56);
+        _paletteLayout.SetRowHeight(0, compact ? 44 : 56);
+        _paletteHeader.SetRowHeight(0, compact ? 20 : 24);
+        _paletteHeader.SetRowHeight(1, compact ? 24 : 28);
         _paletteLayout.SetRowHeight(1, compact ? 0 : 32);
         _paletteLayout.SetRowHeight(3, compact ? 0 : 32);
         _paletteLayout.SetRowHeight(4, compact ? 48 : 52);
