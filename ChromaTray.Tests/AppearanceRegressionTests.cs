@@ -142,7 +142,8 @@ public class AppearanceRegressionTests
         var bounds = control.RectangleToScreen(control.ClientRectangle);
         for (Control? parent = control.Parent; parent is not null; parent = parent.Parent)
         {
-            Assert.True(parent.RectangleToScreen(parent.ClientRectangle).Contains(bounds), $"{control.Name} is clipped by {parent.Name}.");
+            var parentBounds = parent.RectangleToScreen(parent.ClientRectangle);
+            Assert.True(parentBounds.Contains(bounds), $"{control.Name} {bounds} is clipped by {parent.Name} {parentBounds} at DPI {root.DeviceDpi}.");
             if (parent == root) break;
         }
     }

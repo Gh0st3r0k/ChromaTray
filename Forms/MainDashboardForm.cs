@@ -177,6 +177,8 @@ public class MainDashboardForm : Form
         _inspectorLayout = StudioTheme.Stack(
             (_lblSelectedTitle, 30), (_previewSwatch, 128), (formatsViewport, -1), (copyFormats, 58),
             (StudioTheme.Label("All enabled formats. One click to copy.", StudioTheme.Small, StudioTheme.Muted), 28));
+        _inspectorLayout.Name = "InspectorLayout";
+        _inspectorLayout.SizeChanged += (_, _) => FitInspectorContent();
         _rightCard.Controls.Add(_inspectorLayout);
         _workspace = new TableLayoutPanel { ColumnCount = 2, RowCount = 1, Dock = DockStyle.Fill, Margin = Padding.Empty };
         _workspace.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
@@ -249,7 +251,9 @@ public class MainDashboardForm : Form
     private void FitInspectorContent()
     {
         if (_inspectorLayout is null) return;
-        int available = (int)Math.Floor(Math.Max(0, _rightCard.ClientSize.Height - _rightCard.Padding.Vertical) * 96.0 / DeviceDpi);
+        // The padded card can finish scaling after the workspace's SizeChanged.
+        // Use the actual content bounds and react when those bounds settle.
+        int available = (int)Math.Floor(Math.Max(0, _inspectorLayout.ClientSize.Height) * 96.0 / DeviceDpi);
         int copyHeight = available < 136 ? 44 : 58;
         int titleHeight = available < 30 + copyHeight + 48 ? 0 : 30;
         int hintHeight = available >= titleHeight + copyHeight + 48 + 56 + 28 ? 28 : 0;
