@@ -32,20 +32,21 @@ public class AppearanceRegressionTests
             Assert.True(header.Bottom <= actions.Top, "The header overlaps the capture actions.");
             AssertContainedByAncestors(settings, dashboard);
             Assert.True(settings.Height >= 40 * dpi / 96, "Settings button is shorter than its drawing metrics.");
+            SwitchWorkspace(dashboard, "InspectorViewButton");
             AssertContainedByAncestors(Find(dashboard, "CopyFormatsButton"), dashboard);
-            AssertContainedByAncestors(Find(dashboard, "ExportPaletteButton"), dashboard);
-            var palette = Find(dashboard, "PaletteTable");
-            Assert.True(palette.Height >= 72 * dpi / 96, $"The palette cannot display one complete row at DPI {dpi} (height {palette.Height}).");
-            Assert.True(Find(dashboard, "FormatsViewport").Height >= 48 * dpi / 96, "The inspector cannot display one complete format row.");
             foreach (var format in Enum.GetValues<ColorFormat>())
             {
                 var copy = Find(dashboard, $"Copy{format}");
                 Assert.True(copy.Width >= 70 * dpi / 96, $"{format} copy button is too narrow.");
                 Assert.True(copy.Height >= 32 * dpi / 96, $"{format} copy button is too short.");
-                // Rows outside the viewport may be scrolled; each button must
-                // still fit completely inside its own layout row.
                 Assert.True(copy.Parent!.ClientRectangle.Contains(copy.Bounds), $"{format} copy button is clipped by its row.");
             }
+            Assert.True(Find(dashboard, "FormatsViewport").Height >= 48 * dpi / 96, "The inspector cannot display one complete format row.");
+            SavePreview(dashboard, $"inspector-dpi-{dpi}.png");
+            SwitchWorkspace(dashboard, "PaletteViewButton");
+            AssertContainedByAncestors(Find(dashboard, "ExportPaletteButton"), dashboard);
+            var palette = Find(dashboard, "PaletteTable");
+            Assert.True(palette.Height >= 72 * dpi / 96, $"The palette cannot display one complete row at DPI {dpi} (height {palette.Height}).");
             SavePreview(dashboard, $"dashboard-dpi-{dpi}.png");
         });
     }
@@ -141,6 +142,11 @@ public class AppearanceRegressionTests
     }
 
     private static Control Find(Control root, string name) => Assert.Single(root.Controls.Find(name, true));
+    private static void SwitchWorkspace(Form form, string buttonName)
+    {
+        var button = Assert.IsAssignableFrom<Button>(Find(form, buttonName));
+        if (button.Visible) { button.PerformClick(); form.PerformLayout(); }
+    }
     private static void AssertContainedByAncestors(Control control, Control root)
     {
         var bounds = control.RectangleToScreen(control.ClientRectangle);

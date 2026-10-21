@@ -44,6 +44,12 @@ public class MainDashboardForm : Form
     private readonly DpiStackPanel _dashboardLayout;
     private readonly DpiStackPanel _wordmark;
     private readonly DpiStackPanel _paletteLayout;
+    private readonly SurfacePanel _paletteCard;
+    private readonly TableLayoutPanel _workspaceTabs;
+    private readonly StudioButton _paletteTab;
+    private readonly StudioButton _inspectorTab;
+    private bool _inspectorView;
+    private bool _changingWorkspace;
     private readonly Image? _logoImage;
     private readonly Label _lblPaletteCount;
     private readonly PaletteStrip _paletteStrip;
@@ -87,7 +93,20 @@ public class MainDashboardForm : Form
         _wordmark = StudioTheme.Stack(
             (StudioTheme.Label("ChromaTray", StudioTheme.Title), 42),
             (StudioTheme.Label("A little color. A lot of possibility.", StudioTheme.Small, StudioTheme.Muted), 24));
-        _header.Controls.Add(_wordmark, 1, 0);
+        _paletteTab = new StudioButton { Name = "PaletteViewButton", Text = "Palette", Primary = true, Dock = DockStyle.Fill };
+        _inspectorTab = new StudioButton { Name = "InspectorViewButton", Text = "Inspector", Dock = DockStyle.Fill };
+        _paletteTab.Click += (_, _) => { _inspectorView = false; FitWorkspaceColumns(); };
+        _inspectorTab.Click += (_, _) => { _inspectorView = true; FitWorkspaceColumns(); };
+        _workspaceTabs = new TableLayoutPanel { ColumnCount = 2, RowCount = 1, Dock = DockStyle.Fill, Visible = false, Margin = Padding.Empty };
+        _workspaceTabs.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+        _workspaceTabs.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+        _workspaceTabs.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        _workspaceTabs.Controls.Add(_paletteTab, 0, 0);
+        _workspaceTabs.Controls.Add(_inspectorTab, 1, 0);
+        var brandingSlot = new Panel { Dock = DockStyle.Fill, Margin = Padding.Empty };
+        brandingSlot.Controls.Add(_wordmark);
+        brandingSlot.Controls.Add(_workspaceTabs);
+        _header.Controls.Add(brandingSlot, 1, 0);
         _settingsButton = new StudioButton { Name = "SettingsButton", Text = "Settings", Glyph = StudioGlyph.Settings, Dock = DockStyle.Fill, Margin = new Padding(0, 14, 0, 14) };
         _settingsButton.Click += (_, _) => OpenSettingsDialog();
         _header.Controls.Add(_settingsButton, 2, 0);
@@ -113,7 +132,7 @@ public class MainDashboardForm : Form
         captureActions.Controls.Add(_btnPoint, 0, 0);
         captureActions.Controls.Add(_btnRegion, 1, 0);
 
-        var paletteCard = new SurfacePanel { Name = "PaletteCard", Dock = DockStyle.Fill, Margin = new Padding(0, 0, 16, 0) };
+        _paletteCard = new SurfacePanel { Name = "PaletteCard", Dock = DockStyle.Fill, Margin = new Padding(0, 0, 16, 0) };
         _lblPaletteCount = StudioTheme.Label("YOUR PALETTE", StudioTheme.Strong);
         _chkGroupSimilar = new CheckBox
         {
@@ -168,7 +187,7 @@ public class MainDashboardForm : Form
             (paletteHeader, 32), (_paletteStrip, 32), (_colorListView, -1),
             (StudioTheme.Label("Select a shade to explore its formats. Double-click to copy.", StudioTheme.Small, StudioTheme.Muted), 32),
             (exportRow, 52));
-        paletteCard.Controls.Add(_paletteLayout);
+        _paletteCard.Controls.Add(_paletteLayout);
 
         _rightCard = new SurfacePanel { Name = "InspectorCard", Dock = DockStyle.Fill, Margin = Padding.Empty };
         _lblSelectedTitle = StudioTheme.Label("COLOR INSPECTOR", StudioTheme.Strong);
@@ -189,9 +208,9 @@ public class MainDashboardForm : Form
         _workspace.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         _workspace.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         _workspace.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 408));
-        _workspace.Controls.Add(paletteCard, 0, 0);
+        _workspace.Controls.Add(_paletteCard, 0, 0);
         _workspace.Controls.Add(_rightCard, 1, 0);
-        _workspace.SizeChanged += (_, _) => FitInspectorContent();
+        _workspace.SizeChanged += (_, _) => { FitWorkspaceColumns(); FitInspectorContent(); };
 
         _lblStatus = StudioTheme.Label("Ready to capture.", StudioTheme.Small, StudioTheme.Muted);
         _lblStatus.Name = "StatusText";
@@ -248,7 +267,6 @@ public class MainDashboardForm : Form
         _header.ColumnStyles[0].Width = S(54);
         _header.ColumnStyles[2].Width = S(152);
         _settingsButton.Margin = new Padding(0, S(14), 0, S(14));
-        _workspace.ColumnStyles[1].Width = Math.Min(S(408), Math.Max(S(320), _workspace.ClientSize.Width * .43f));
         RebuildDynamicFormatLayout();
         ApplyResponsiveLayout();
         PerformLayout();
@@ -282,6 +300,38 @@ public class MainDashboardForm : Form
         _paletteLayout.SetRowHeight(4, compact ? 48 : 52);
         int verticalMargin = (int)Math.Round((compact ? 6 : 14) * DeviceDpi / 96f);
         _settingsButton.Margin = new Padding(0, verticalMargin, 0, verticalMargin);
+        FitWorkspaceColumns();
+    }
+
+    private void FitWorkspaceColumns()
+    {
+        if (_workspace is null || _changingWorkspace) return;
+        _changingWorkspace = true;
+        _workspace.SuspendLayout();
+        try
+        {
+            int S(int value) => (int)Math.Round(value * DeviceDpi / 96f);
+            bool narrow = _workspace.ClientSize.Width < S(800);
+            _wordmark.Visible = !narrow;
+            _workspaceTabs.Visible = narrow;
+            _paletteTab.Margin = new Padding(0, S(6), S(4), S(6));
+            _inspectorTab.Margin = new Padding(S(4), S(6), 0, S(6));
+            _paletteTab.Primary = !_inspectorView;
+            _inspectorTab.Primary = _inspectorView;
+            _paletteTab.Invalidate();
+            _inspectorTab.Invalidate();
+            _paletteCard.Visible = !narrow || !_inspectorView;
+            _rightCard.Visible = !narrow || _inspectorView;
+            _paletteCard.Margin = new Padding(0, 0, narrow ? 0 : S(16), 0);
+            _workspace.SetCellPosition(_rightCard, new TableLayoutPanelCellPosition(narrow ? 0 : 1, 0));
+            _workspace.ColumnStyles[1].Width = narrow ? 0 : Math.Min(S(408), _workspace.ClientSize.Width * .43f);
+        }
+        finally
+        {
+            _workspace.ResumeLayout(true);
+            _changingWorkspace = false;
+        }
+        FitInspectorContent();
     }
 
     private void FitInspectorContent()
