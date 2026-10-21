@@ -43,27 +43,26 @@ public class DesignLayoutTests
             using var dashboard = new MainDashboardForm(new AppSettings());
             dashboard.Show();
             dashboard.UpdatePaletteList([
-                ColorDetails.FromColor(Color.FromArgb(181, 166, 255), 480, 48),
-                ColorDetails.FromColor(Color.FromArgb(116, 225, 193), 240, 24),
-                ColorDetails.FromColor(Color.FromArgb(255, 153, 166), 160, 16),
-                ColorDetails.FromColor(Color.FromArgb(245, 191, 113), 80, 8),
-                ColorDetails.FromColor(Color.FromArgb(117, 169, 255), 40, 4)
-            ], "Region 40×25 px · 1,000 pixels · 5 colors");
+                ColorDetails.FromColor(Color.FromArgb(22, 29, 111), 400, 40),
+                ColorDetails.FromColor(Color.FromArgb(11, 47, 159), 300, 30),
+                ColorDetails.FromColor(Color.FromArgb(152, 222, 217), 200, 20),
+                ColorDetails.FromColor(Color.FromArgb(199, 255, 216), 100, 10)
+            ], "Region 40×25 px · 1,000 pixels · 4 colors");
             SavePreview(dashboard, "dashboard.png");
             var table = Assert.IsType<PaletteGrid>(Assert.Single(dashboard.Controls.Find("PaletteTable", true)));
             table.SelectedIndex = 1;
             var hex = Assert.IsType<TextBox>(Assert.Single(dashboard.Controls.Find("ValueHex", true)));
-            Assert.Equal("#74E1C1", hex.Text);
-            Assert.Equal(5, table.Colors.Count);
-            Assert.Contains("#74E1C1", table.TooltipFor(1));
+            Assert.Equal("#0B2F9F", hex.Text);
+            Assert.Equal(4, table.Colors.Count);
+            Assert.Contains("#0B2F9F", table.TooltipFor(1));
             using var settings = new SettingsForm(new AppSettings());
             settings.Show();
             SavePreview(settings, "settings.png");
             var screen = new Bitmap(960, 640);
             using (var g = Graphics.FromImage(screen))
             {
-                g.Clear(Color.FromArgb(80, 70, 120));
-                using var brush = new SolidBrush(Color.FromArgb(181, 166, 255));
+                g.Clear(Color.FromArgb(22, 29, 111));
+                using var brush = new SolidBrush(Color.FromArgb(152, 222, 217));
                 g.FillRectangle(brush, 220, 180, 220, 220);
             }
             using var overlay = new ScreenOverlayForm(CaptureMode.Point, screen, new Rectangle(0, 0, 960, 640),

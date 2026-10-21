@@ -23,6 +23,10 @@ internal static class StudioTheme
     public static readonly Font Mono = new("Consolas", 10f);
     public static readonly Font MonoLarge = new("Consolas", 24f, FontStyle.Bold);
 
+    // A nested control can retain its previous cached DPI during handle creation
+    // or WM_DPICHANGED. Layout and drawing must share the owning window's DPI.
+    public static int Dpi(Control control) => control.FindForm()?.DeviceDpi ?? control.DeviceDpi;
+
     public static GraphicsPath Round(RectangleF rect, float radius = 12)
     {
         var path = new GraphicsPath();
@@ -91,7 +95,7 @@ internal class SurfacePanel : Panel
     protected override void OnPaint(PaintEventArgs e)
     {
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        float scale = DeviceDpi / 96f;
+        float scale = StudioTheme.Dpi(this) / 96f;
         using var path = StudioTheme.Round(new RectangleF(.5f, .5f, Width - 1f, Height - 1f), Radius * scale);
         using var fill = new SolidBrush(FillColor);
         using var border = new Pen(EdgeColor);
@@ -139,7 +143,7 @@ internal sealed class StudioButton : Button
     {
         var g = e.Graphics;
         g.SmoothingMode = SmoothingMode.AntiAlias;
-        float scale = DeviceDpi / 96f;
+        float scale = StudioTheme.Dpi(this) / 96f;
         int S(int value) => (int)Math.Round(value * scale);
         bool card = Description.Length > 0;
         Color fill = Primary ? AccentColor : _hover ? StudioTheme.Raised : StudioTheme.Surface;
@@ -238,7 +242,7 @@ internal sealed class ColorPreview : Control
         if (_color is null) return;
         var g = e.Graphics;
         g.SmoothingMode = SmoothingMode.AntiAlias;
-        int S(int value) => (int)Math.Round(value * DeviceDpi / 96f);
+        int S(int value) => (int)Math.Round(value * StudioTheme.Dpi(this) / 96f);
         using var path = StudioTheme.Round(new RectangleF(0, 0, Width - 1, Height - 1), S(12));
         using var brush = new SolidBrush(_color.RawColor);
         g.FillPath(brush, path);

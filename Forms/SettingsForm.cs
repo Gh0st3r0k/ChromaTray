@@ -181,8 +181,8 @@ public class SettingsForm : Form
 
     private static string GetFormatDescription(ColorFormat fmt) => fmt switch
     {
-        ColorFormat.Hex => "HEX  — Hexadecimal (#3B82F6)",
-        ColorFormat.Rgb => "RGB  — Red, Green, Blue (rgb(59, 130, 246))",
+        ColorFormat.Hex => "HEX  — Hexadecimal (#98DED9)",
+        ColorFormat.Rgb => "RGB  — Red, Green, Blue (rgb(152, 222, 217))",
         ColorFormat.Hsl => "HSL  — Hue, Saturation, Lightness",
         ColorFormat.Hsv => "HSV  — Hue, Saturation, Value (HSB)",
         ColorFormat.Cmyk => "CMYK — Cyan, Magenta, Yellow, Key",

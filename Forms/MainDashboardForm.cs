@@ -321,6 +321,7 @@ public class MainDashboardForm : Form
 
     private void RebuildDynamicFormatLayout()
     {
+        int selectedIndex = _colorListView.SelectedIndex;
         int S(int value) => (int)Math.Round(value * DeviceDpi / 96f);
         _formatsContainer.SuspendLayout();
         foreach (Control control in _formatsContainer.Controls.Cast<Control>().ToArray()) control.Dispose();
@@ -352,7 +353,11 @@ public class MainDashboardForm : Form
             _formatsContainer.Controls.Add(line, 0, row++);
         }
         _formatsContainer.ResumeLayout(true);
-        if (_currentPalette.Count > 0) UpdatePaletteList(_currentPalette, _lblStatus.Text);
+        if (_currentPalette.Count > 0)
+        {
+            UpdatePaletteList(_currentPalette, _lblStatus.Text);
+            _colorListView.SelectedIndex = Math.Clamp(selectedIndex, 0, _currentPalette.Count - 1);
+        }
     }
 
     private void OpenSettingsDialog()

@@ -21,7 +21,7 @@ internal sealed class PaletteGrid : Control
     public ColorDetails? SelectedColor => _selectedIndex >= 0 ? _colors[_selectedIndex] : null;
     internal int ScrollOffset => _scroll.Value;
     internal StudioScrollBar ScrollBar => _scroll;
-    private int S(int value) => (int)Math.Round(value * DeviceDpi / 96f);
+    private int S(int value) => (int)Math.Round(value * StudioTheme.Dpi(this) / 96f);
     private int HeaderHeight => S(36);
     private int RowHeight => S(48);
     public int SelectedIndex
@@ -50,7 +50,7 @@ internal sealed class PaletteGrid : Control
         AccessibleName = "Captured color palette";
         AccessibleDescription = "Arrow keys select colors. Enter or double-click copies. Control+C copies the selected color.";
         Controls.Add(_scroll);
-        _scroll.ValueChanged += (_, _) => Invalidate();
+        _scroll.ValueChanged += (_, _) => { _hoverIndex = -1; _tips.SetToolTip(this, null); Invalidate(); };
     }
     public void SetPalette(IReadOnlyList<ColorDetails> colors, IReadOnlyList<ColorFormat> formats)
     {

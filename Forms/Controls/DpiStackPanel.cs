@@ -40,7 +40,7 @@ internal sealed class DpiStackPanel(int[] rowHeights) : TableLayoutPanel
             _updating = true;
             try
             {
-                int S(int value) => (int)Math.Round(value * DeviceDpi / 96f);
+                int S(int value) => (int)Math.Round(value * StudioTheme.Dpi(this) / 96f);
                 Padding Scale(Padding p) => new(S(p.Left), S(p.Top), S(p.Right), S(p.Bottom));
                 Padding = Scale(_logicalPadding);
                 for (int row = 0; row < Math.Min(rowHeights.Length, RowStyles.Count); row++)

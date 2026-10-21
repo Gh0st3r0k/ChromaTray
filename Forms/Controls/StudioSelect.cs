@@ -83,7 +83,7 @@ internal sealed class StudioSelect : Control
     protected override void OnPaint(PaintEventArgs e)
     {
         base.OnPaint(e);
-        int S(int value) => (int)Math.Round(value * DeviceDpi / 96f);
+        int S(int value) => (int)Math.Round(value * StudioTheme.Dpi(this) / 96f);
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
         using var path = StudioTheme.Round(new RectangleF(1, 1, Width - 2, Height - 2), S(9));
         using var fill = new SolidBrush(StudioTheme.Raised);
@@ -93,7 +93,7 @@ internal sealed class StudioSelect : Control
         TextRenderer.DrawText(e.Graphics, SelectedIndex >= 0 ? _items[SelectedIndex] : "Choose format", Font,
             new Rectangle(S(12), 0, Math.Max(0, Width - S(48)), Height), StudioTheme.Text,
             TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
-        using var pen = new Pen(StudioTheme.Accent, Math.Max(1.5f, DeviceDpi / 64f));
+        using var pen = new Pen(StudioTheme.Accent, Math.Max(1.5f, StudioTheme.Dpi(this) / 64f));
         int x = Width - S(23), y = Height / 2;
         e.Graphics.DrawLines(pen, new Point[] { new(x - S(4), y - S(2)), new(x, y + S(2)), new(x + S(4), y - S(2)) });
     }

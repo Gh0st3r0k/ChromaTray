@@ -45,6 +45,19 @@ jobs:
         env:
           CHROMATRAY_UI_PREVIEW_DIR: '${{ github.workspace }}/artifacts/ui-preview'
         run: dotnet test ChromaTray.Tests/ChromaTray.Tests.csproj -c Release --no-restore --blame-hang --blame-hang-timeout 90s --blame-hang-dump-type mini --logger 'console;verbosity=normal' --logger trx --results-directory artifacts/tests/windows
+      - name: Report test failures in annotations
+        if: always()
+        shell: pwsh
+        run: |
+          Get-ChildItem artifacts/tests/windows -Filter '*.trx' -ErrorAction SilentlyContinue | ForEach-Object {
+            [xml]$report = Get-Content $_.FullName
+            $failed = $report.SelectNodes("//*[local-name()='UnitTestResult' and @outcome='Failed']")
+            foreach ($test in $failed) {
+              $message = $test.SelectSingleNode(".//*[local-name()='Message']").InnerText
+              $detail = ($test.testName + ': ' + $message).Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+              Write-Output "::error title=Windows regression::$detail"
+            }
+          }
       - uses: actions/upload-artifact@v4
         if: always()
         with:

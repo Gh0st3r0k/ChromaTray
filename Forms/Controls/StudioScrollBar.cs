@@ -44,11 +44,11 @@ internal sealed class StudioScrollBar : Control
     {
         get
         {
-            int inset = Math.Max(2, DeviceDpi / 32);
+            int inset = Math.Max(2, StudioTheme.Dpi(this) / 32);
             int track = Math.Max(1, Height - inset * 2);
-            int length = _content <= 0 ? track : Math.Clamp((int)((long)track * _viewport / _content), Math.Min(track, 28 * DeviceDpi / 96), track);
+            int length = _content <= 0 ? track : Math.Clamp((int)((long)track * _viewport / _content), Math.Min(track, 28 * StudioTheme.Dpi(this) / 96), track);
             int top = inset + (Maximum == 0 ? 0 : (int)((long)(track - length) * Value / Maximum));
-            int width = Math.Max(4, (_hover || Capture ? 8 : 6) * DeviceDpi / 96);
+            int width = Math.Max(4, (_hover || Capture ? 8 : 6) * StudioTheme.Dpi(this) / 96);
             return new((Width - width) / 2, top, width, length);
         }
     }
@@ -74,7 +74,7 @@ internal sealed class StudioScrollBar : Control
     {
         base.OnMouseMove(e);
         if (!Capture) return;
-        int travel = Math.Max(1, Height - 2 * Math.Max(2, DeviceDpi / 32) - ThumbBounds.Height);
+        int travel = Math.Max(1, Height - 2 * Math.Max(2, StudioTheme.Dpi(this) / 32) - ThumbBounds.Height);
         Value = _dragValue + (int)((long)(e.Y - _dragY) * Maximum / travel);
     }
     protected override void OnMouseUp(MouseEventArgs e) { Capture = false; Invalidate(); base.OnMouseUp(e); }
@@ -120,7 +120,7 @@ internal sealed class StudioScrollViewport : Panel
         _layingOut = true;
         try
         {
-            int barWidth = Math.Max(12, 14 * DeviceDpi / 96);
+            int barWidth = Math.Max(12, 14 * StudioTheme.Dpi(this) / 96);
             int preferred = _content.GetPreferredSize(new Size(Math.Max(1, Width - barWidth), 0)).Height;
             bool needed = preferred > Height;
             int contentWidth = Math.Max(1, Width - (needed ? barWidth : 0));
@@ -137,7 +137,7 @@ internal sealed class StudioScrollViewport : Panel
         _wheelDelta += e.Delta;
         int ticks = _wheelDelta / SystemInformation.MouseWheelScrollDelta;
         _wheelDelta %= SystemInformation.MouseWheelScrollDelta;
-        _scroll.Value -= ticks * Math.Max(24, 48 * DeviceDpi / 96);
+        _scroll.Value -= ticks * Math.Max(24, 48 * StudioTheme.Dpi(this) / 96);
         if (e is HandledMouseEventArgs handled) handled.Handled = true;
         base.OnMouseWheel(e);
     }
