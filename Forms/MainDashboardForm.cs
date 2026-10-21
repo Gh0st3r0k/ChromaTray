@@ -43,6 +43,7 @@ public class MainDashboardForm : Form
     private readonly DpiStackPanel _inspectorLayout;
     private readonly DpiStackPanel _dashboardLayout;
     private readonly DpiStackPanel _wordmark;
+    private readonly DpiStackPanel _paletteLayout;
     private readonly Image? _logoImage;
     private readonly Label _lblPaletteCount;
     private readonly PaletteStrip _paletteStrip;
@@ -163,10 +164,11 @@ public class MainDashboardForm : Form
         exportRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 154));
         exportRow.Controls.Add(_cmbExportFormat, 0, 0);
         exportRow.Controls.Add(exportButton, 1, 0);
-        paletteCard.Controls.Add(StudioTheme.Stack(
+        _paletteLayout = StudioTheme.Stack(
             (paletteHeader, 32), (_paletteStrip, 32), (_colorListView, -1),
             (StudioTheme.Label("Select a shade to explore its formats. Double-click to copy.", StudioTheme.Small, StudioTheme.Muted), 32),
-            (exportRow, 52)));
+            (exportRow, 52));
+        paletteCard.Controls.Add(_paletteLayout);
 
         _rightCard = new SurfacePanel { Name = "InspectorCard", Dock = DockStyle.Fill, Margin = Padding.Empty };
         _lblSelectedTitle = StudioTheme.Label("COLOR INSPECTOR", StudioTheme.Strong);
@@ -262,15 +264,23 @@ public class MainDashboardForm : Form
     private void ApplyResponsiveLayout()
     {
         bool compact = ClientSize.Height * 96.0 / DeviceDpi < 760;
-        _dashboardLayout.SetRowHeight(0, compact ? 64 : 80);
-        _dashboardLayout.SetRowHeight(1, compact ? 88 : 100);
-        _dashboardLayout.SetRowHeight(2, compact ? 12 : 20);
-        _dashboardLayout.SetRowHeight(4, compact ? 28 : 40);
+        _dashboardLayout.SetRowHeight(0, compact ? 56 : 80);
+        _dashboardLayout.SetRowHeight(1, compact ? 64 : 100);
+        _dashboardLayout.SetRowHeight(2, compact ? 8 : 20);
+        _dashboardLayout.SetRowHeight(4, compact ? 24 : 40);
         _dashboardLayout.LogicalPadding = new Padding(24, compact ? 12 : 16, 24, compact ? 4 : 8);
         _wordmark.SetRowHeight(1, compact ? 0 : 24);
         var subtitle = _wordmark.GetControlFromPosition(0, 1);
         if (subtitle is not null) subtitle.Visible = !compact;
-        int verticalMargin = (int)Math.Round((compact ? 10 : 14) * DeviceDpi / 96f);
+        _btnPoint.Description = compact ? "" : "Find the perfect pixel. Arrow keys for precision.";
+        _btnRegion.Description = compact ? "" : "Turn any part of your screen into a palette.";
+        _btnPoint.Invalidate();
+        _btnRegion.Invalidate();
+        _paletteLayout.SetRowHeight(0, compact ? 28 : 32);
+        _paletteLayout.SetRowHeight(1, compact ? 0 : 32);
+        _paletteLayout.SetRowHeight(3, compact ? 0 : 32);
+        _paletteLayout.SetRowHeight(4, compact ? 48 : 52);
+        int verticalMargin = (int)Math.Round((compact ? 6 : 14) * DeviceDpi / 96f);
         _settingsButton.Margin = new Padding(0, verticalMargin, 0, verticalMargin);
     }
 

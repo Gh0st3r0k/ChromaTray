@@ -33,6 +33,10 @@ public class AppearanceRegressionTests
             AssertContainedByAncestors(settings, dashboard);
             Assert.True(settings.Height >= 40 * dpi / 96, "Settings button is shorter than its drawing metrics.");
             AssertContainedByAncestors(Find(dashboard, "CopyFormatsButton"), dashboard);
+            AssertContainedByAncestors(Find(dashboard, "ExportPaletteButton"), dashboard);
+            var palette = Find(dashboard, "PaletteTable");
+            Assert.True(palette.Height >= 72 * dpi / 96, $"The palette cannot display one complete row at DPI {dpi} (height {palette.Height}).");
+            Assert.True(Find(dashboard, "FormatsViewport").Height >= 48 * dpi / 96, "The inspector cannot display one complete format row.");
             foreach (var format in Enum.GetValues<ColorFormat>())
             {
                 var copy = Find(dashboard, $"Copy{format}");

@@ -22,8 +22,8 @@ internal sealed class PaletteGrid : Control
     internal int ScrollOffset => _scroll.Value;
     internal StudioScrollBar ScrollBar => _scroll;
     private int S(int value) => (int)Math.Round(value * StudioTheme.Dpi(this) / 96f);
-    private int HeaderHeight => S(36);
-    private int RowHeight => S(48);
+    private int HeaderHeight => S(Height < S(180) ? 28 : 36);
+    private int RowHeight => S(Height < S(180) ? 44 : 48);
     public int SelectedIndex
     {
         get => _selectedIndex;
