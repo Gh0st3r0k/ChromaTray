@@ -19,12 +19,12 @@ public class MainDashboardForm : Form
     private readonly StudioButton _btnRegion;
     private readonly CheckBox _chkGroupSimilar;
 
-    private readonly ListView _colorListView;
+    private readonly PaletteGrid _colorListView;
     private readonly Panel _rightCard;
     private readonly TableLayoutPanel _formatsContainer;
     private readonly ColorPreview _previewSwatch;
     private readonly Label _lblSelectedTitle;
-    private readonly ComboBox _cmbExportFormat;
+    private readonly StudioSelect _cmbExportFormat;
     private readonly Label _lblStatus;
 
     private readonly Dictionary<ColorFormat, TextBox> _formatBoxes = new();
@@ -37,8 +37,10 @@ public class MainDashboardForm : Form
     private CancellationTokenSource? _analysisCancellation;
     private readonly Icon _appIcon;
     private readonly ToolTip _tips = new();
-    private readonly ImageList _rowImages;
-    private Bitmap _rowSpacer;
+    private readonly TableLayoutPanel _header;
+    private readonly TableLayoutPanel _workspace;
+    private readonly StudioButton _settingsButton;
+    private readonly DpiStackPanel _inspectorLayout;
     private readonly Image? _logoImage;
     private readonly Label _lblPaletteCount;
     private readonly PaletteStrip _paletteStrip;
@@ -60,7 +62,7 @@ public class MainDashboardForm : Form
         _appIcon = CreateDynamicAppIcon();
         Icon = _appIcon;
 
-        var trayMenu = new ContextMenuStrip { BackColor = StudioTheme.Surface, ForeColor = StudioTheme.Text };
+        var trayMenu = new ContextMenuStrip { BackColor = StudioTheme.Surface, ForeColor = StudioTheme.Text, Renderer = new StudioMenuRenderer() };
         _trayPointItem = new ToolStripMenuItem("", null, (_, _) => StartCapture(CaptureMode.Point));
         _trayRegionItem = new ToolStripMenuItem("", null, (_, _) => StartCapture(CaptureMode.Region));
         trayMenu.Items.AddRange([_trayPointItem, _trayRegionItem, new ToolStripSeparator()]);
@@ -70,20 +72,22 @@ public class MainDashboardForm : Form
         _trayIcon = new NotifyIcon { Icon = Icon, ContextMenuStrip = trayMenu, Visible = true };
         _trayIcon.MouseClick += (_, e) => { if (e.Button == MouseButtons.Left) ShowMainWindow(); };
 
-        var header = new TableLayoutPanel { ColumnCount = 3, RowCount = 1, Margin = Padding.Empty, BackColor = Color.Transparent };
-        header.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 54));
-        header.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        header.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
+        _header = new TableLayoutPanel { ColumnCount = 3, RowCount = 1, Margin = Padding.Empty, BackColor = Color.Transparent };
+        _header.Name = "MainHeader";
+        _header.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        _header.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 54));
+        _header.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        _header.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 152));
         var logo = new PictureBox { Image = _appIcon.ToBitmap(), SizeMode = PictureBoxSizeMode.CenterImage, Dock = DockStyle.Fill, Margin = new Padding(0, 0, 12, 0) };
         _logoImage = logo.Image;
-        header.Controls.Add(logo, 0, 0);
+        _header.Controls.Add(logo, 0, 0);
         var wordmark = StudioTheme.Stack(
             (StudioTheme.Label("ChromaTray", StudioTheme.Title), 42),
             (StudioTheme.Label("A little color. A lot of possibility.", StudioTheme.Small, StudioTheme.Muted), 24));
-        header.Controls.Add(wordmark, 1, 0);
-        var settings = new StudioButton { Name = "SettingsButton", Text = "Settings", Glyph = StudioGlyph.Settings, Dock = DockStyle.Fill, Margin = new Padding(0, 14, 0, 14) };
-        settings.Click += (_, _) => OpenSettingsDialog();
-        header.Controls.Add(settings, 2, 0);
+        _header.Controls.Add(wordmark, 1, 0);
+        _settingsButton = new StudioButton { Name = "SettingsButton", Text = "Settings", Glyph = StudioGlyph.Settings, Dock = DockStyle.Fill, Margin = new Padding(0, 14, 0, 14) };
+        _settingsButton.Click += (_, _) => OpenSettingsDialog();
+        _header.Controls.Add(_settingsButton, 2, 0);
 
         _btnPoint = new StudioButton
         {
@@ -101,6 +105,8 @@ public class MainDashboardForm : Form
         captureActions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
         captureActions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
         _btnPoint.Dock = _btnRegion.Dock = DockStyle.Fill;
+        captureActions.Name = "CaptureActions";
+        captureActions.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         captureActions.Controls.Add(_btnPoint, 0, 0);
         captureActions.Controls.Add(_btnRegion, 1, 0);
 
@@ -123,60 +129,34 @@ public class MainDashboardForm : Form
             if (_lastRegionBitmap != null) RunRegionAnalysis(_lastRegionBitmap);
         };
         var paletteHeader = new TableLayoutPanel { ColumnCount = 2, RowCount = 1, Margin = Padding.Empty };
+        paletteHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         paletteHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         paletteHeader.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         paletteHeader.Controls.Add(_lblPaletteCount, 0, 0);
         paletteHeader.Controls.Add(_chkGroupSimilar, 1, 0);
         _paletteStrip = new PaletteStrip { Name = "PaletteOverview", Margin = new Padding(0, 10, 0, 10) };
 
-        _rowImages = new ImageList { ImageSize = new Size(1, 40), ColorDepth = ColorDepth.Depth32Bit };
-        // ImageList can defer native image creation until the ListView gets a
-        // handle. Retain the source bitmap for that deferred conversion.
-        _rowSpacer = new Bitmap(1, 40);
-        _rowImages.Images.Add(_rowSpacer);
-        _colorListView = new PaletteListView
-        {
-            Name = "PaletteTable", Dock = DockStyle.Fill, View = View.Details, FullRowSelect = true,
-            MultiSelect = false, HideSelection = false, BackColor = StudioTheme.Surface, ForeColor = StudioTheme.Text,
-            BorderStyle = BorderStyle.None, OwnerDraw = true, SmallImageList = _rowImages, HeaderStyle = ColumnHeaderStyle.Nonclickable,
-            Font = StudioTheme.Mono, ShowItemToolTips = true, Margin = Padding.Empty,
-            AccessibleName = "Captured color palette", AccessibleDescription = "Select a color to see all enabled formats. Double-click to copy."
-        };
-        _colorListView.DrawColumnHeader += (_, e) =>
-        {
-            using var bg = new SolidBrush(StudioTheme.Surface);
-            e.Graphics.FillRectangle(bg, e.Bounds);
-            var rect = e.Bounds; rect.Inflate(-8, 0);
-            TextRenderer.DrawText(e.Graphics, e.Header?.Text, StudioTheme.Small, rect, StudioTheme.Muted,
-                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
-            using var line = new Pen(StudioTheme.Border);
-            e.Graphics.DrawLine(line, e.Bounds.Left, e.Bounds.Bottom - 1, e.Bounds.Right, e.Bounds.Bottom - 1);
-        };
-        _colorListView.DrawItem += (_, _) => { };
-        _colorListView.DrawSubItem += DrawColorListSubItem;
-        _colorListView.Resize += (_, _) => ResizePaletteColumns();
+        _colorListView = new PaletteGrid { Name = "PaletteTable", Dock = DockStyle.Fill, Margin = Padding.Empty };
         _colorListView.SelectedIndexChanged += (_, _) =>
         {
-            if (_colorListView.SelectedItems.Count > 0 && _colorListView.SelectedItems[0].Tag is ColorDetails color)
-                DisplaySelectedColor(color);
+            if (_colorListView.SelectedColor is { } color) DisplaySelectedColor(color);
         };
-        _colorListView.DoubleClick += (_, _) => CopyPrimaryColor();
+        _colorListView.ColorActivated += (_, _) => CopyPrimaryColor();
         _colorListView.KeyDown += (_, e) =>
         {
             if (e.Control && e.KeyCode == Keys.C) { CopyPrimaryColor(); e.SuppressKeyPress = true; }
         };
 
-        _cmbExportFormat = new ComboBox
+        _cmbExportFormat = new StudioSelect
         {
-            Name = "ExportMode", DropDownStyle = ComboBoxStyle.DropDownList, Dock = DockStyle.Fill,
-            BackColor = StudioTheme.Raised, ForeColor = StudioTheme.Text, Font = StudioTheme.Small,
-            FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 11, 12, 0), AccessibleName = "Palette export format"
+            Name = "ExportMode", Dock = DockStyle.Fill, Font = StudioTheme.Small,
+            Margin = new Padding(0, 6, 12, 0), AccessibleName = "Palette export format"
         };
-        _cmbExportFormat.Items.AddRange(["All active formats", "Primary format only", "CSS custom properties", "JSON palette array"]);
-        _cmbExportFormat.SelectedIndex = 0;
-        var exportButton = new StudioButton { Name = "ExportPaletteButton", Text = "Copy palette", Glyph = StudioGlyph.Copy, AccentColor = StudioTheme.Mint, Dock = DockStyle.Fill, Margin = new Padding(0, 7, 0, 0) };
+        _cmbExportFormat.SetItems("All active formats", "Primary format only", "CSS custom properties", "JSON palette array");
+        var exportButton = new StudioButton { Name = "ExportPaletteButton", Text = "Copy palette", Glyph = StudioGlyph.Copy, AccentColor = StudioTheme.Mint, Dock = DockStyle.Fill, Margin = new Padding(0, 6, 0, 0) };
         exportButton.Click += (_, _) => CopyEntirePalette();
         var exportRow = new TableLayoutPanel { ColumnCount = 2, RowCount = 1, Margin = Padding.Empty };
+        exportRow.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         exportRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         exportRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 154));
         exportRow.Controls.Add(_cmbExportFormat, 0, 0);
@@ -191,19 +171,19 @@ public class MainDashboardForm : Form
         _previewSwatch = new ColorPreview { Name = "SelectedColorPreview", Margin = new Padding(0, 8, 0, 10) };
         _formatsContainer = new TableLayoutPanel { Name = "ColorFormats", ColumnCount = 1, Margin = Padding.Empty, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink };
         _formatsContainer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        var copyFormats = new StudioButton { Name = "CopyFormatsButton", Text = "Copy active formats", Primary = true, Glyph = StudioGlyph.Copy, Margin = new Padding(0, 12, 0, 0) };
+        var copyFormats = new StudioButton { Name = "CopyFormatsButton", Text = "Copy active formats", Primary = true, Glyph = StudioGlyph.Copy, Margin = new Padding(0, 8, 0, 0) };
         copyFormats.Click += (_, _) => CopySingleColorSummary();
-        var formatsViewport = new Panel { Name = "FormatsViewport", AutoScroll = true, Margin = Padding.Empty };
-        _formatsContainer.Dock = DockStyle.Top;
-        formatsViewport.Controls.Add(_formatsContainer);
-        _rightCard.Controls.Add(StudioTheme.Stack(
-            (_lblSelectedTitle, 30), (_previewSwatch, 128), (formatsViewport, -1), (copyFormats, 50),
-            (StudioTheme.Label("All enabled formats. One click to copy.", StudioTheme.Small, StudioTheme.Muted), 28)));
-        var workspace = new TableLayoutPanel { ColumnCount = 2, RowCount = 1, Dock = DockStyle.Fill, Margin = Padding.Empty };
-        workspace.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        workspace.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 376));
-        workspace.Controls.Add(paletteCard, 0, 0);
-        workspace.Controls.Add(_rightCard, 1, 0);
+        var formatsViewport = new StudioScrollViewport { Name = "FormatsViewport", Content = _formatsContainer };
+        _inspectorLayout = StudioTheme.Stack(
+            (_lblSelectedTitle, 30), (_previewSwatch, 128), (formatsViewport, -1), (copyFormats, 58),
+            (StudioTheme.Label("All enabled formats. One click to copy.", StudioTheme.Small, StudioTheme.Muted), 28));
+        _rightCard.Controls.Add(_inspectorLayout);
+        _workspace = new TableLayoutPanel { ColumnCount = 2, RowCount = 1, Dock = DockStyle.Fill, Margin = Padding.Empty };
+        _workspace.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        _workspace.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 408));
+        _workspace.Controls.Add(paletteCard, 0, 0);
+        _workspace.Controls.Add(_rightCard, 1, 0);
+        _workspace.SizeChanged += (_, _) => FitInspectorContent();
 
         _lblStatus = StudioTheme.Label("Ready to capture.", StudioTheme.Small, StudioTheme.Muted);
         _lblStatus.Name = "StatusText";
@@ -211,18 +191,20 @@ public class MainDashboardForm : Form
         var trayHint = StudioTheme.Label("Closing the window keeps ChromaTray in your tray.", StudioTheme.Small, StudioTheme.Muted);
         trayHint.TextAlign = ContentAlignment.MiddleRight;
         var footer = new TableLayoutPanel { ColumnCount = 2, RowCount = 1, Margin = Padding.Empty };
+        footer.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         footer.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 360));
         footer.Controls.Add(_lblStatus, 0, 0);
         footer.Controls.Add(trayHint, 1, 0);
-        var root = StudioTheme.Stack((header, 72), (captureActions, 100), (new Panel { Margin = Padding.Empty }, 20), (workspace, -1), (footer, 40));
-        root.Padding = new Padding(24, 16, 24, 8);
+        var root = StudioTheme.Stack((_header, 80), (captureActions, 100), (new Panel { Margin = Padding.Empty }, 20), (_workspace, -1), (footer, 40));
+        root.Name = "DashboardLayout";
+        root.LogicalPadding = new Padding(24, 16, 24, 8);
         Controls.Add(root);
         _tips.SetToolTip(_btnPoint, "Pick a pixel. Use arrow keys to move one pixel and Enter to select.");
         _tips.SetToolTip(_chkGroupSimilar, "Round RGB channels in steps of 8 to combine nearby shades.");
         UpdateHotkeyLabels();
         RebuildDynamicFormatLayout();
-        var initial = ColorDetails.FromColor(Color.FromArgb(181, 166, 255));
+        var initial = ColorDetails.FromColor(StudioTheme.Accent);
         UpdatePaletteList([initial], "Ready. Pick a point or scan a region to start.");
     }
 
@@ -237,28 +219,46 @@ public class MainDashboardForm : Form
     protected override void OnShown(EventArgs e)
     {
         base.OnShown(e);
-        UpdateRowHeight();
-        ResizePaletteColumns();
+        int S(int value) => (int)Math.Round(value * DeviceDpi / 96f);
+        var area = Screen.FromControl(this).WorkingArea;
+        MinimumSize = new Size(Math.Min(S(980), area.Width), Math.Min(S(660), area.Height));
+        if (Width > area.Width || Height > area.Height)
+            Bounds = new Rectangle(area.Left, area.Top, Math.Min(Width, area.Width), Math.Min(Height, area.Height));
+        ApplyDpiMetrics();
         RegisterConfiguredHotkeys();
     }
 
     protected override void OnDpiChanged(DpiChangedEventArgs e)
     {
         base.OnDpiChanged(e);
-        UpdateRowHeight();
-        ResizePaletteColumns();
+        if (_formatsContainer is not null) ApplyDpiMetrics();
     }
 
-    private void UpdateRowHeight()
+    private void ApplyDpiMetrics()
     {
-        if (_rowImages is null) return;
-        int height = Math.Clamp((int)Math.Round(40 * DeviceDpi / 96f), 24, 256);
-        if (_rowImages.ImageSize.Height == height) return;
-        _rowImages.Images.Clear();
-        _rowSpacer.Dispose();
-        _rowImages.ImageSize = new Size(1, height);
-        _rowSpacer = new Bitmap(1, height);
-        _rowImages.Images.Add(_rowSpacer);
+        int S(int value) => (int)Math.Round(value * DeviceDpi / 96f);
+        _header.ColumnStyles[0].Width = S(54);
+        _header.ColumnStyles[2].Width = S(152);
+        _settingsButton.Margin = new Padding(0, S(14), 0, S(14));
+        _workspace.ColumnStyles[1].Width = Math.Min(S(408), Math.Max(S(320), _workspace.ClientSize.Width * .43f));
+        RebuildDynamicFormatLayout();
+        PerformLayout();
+        FitInspectorContent();
+    }
+
+    private void FitInspectorContent()
+    {
+        if (_inspectorLayout is null) return;
+        int available = (int)Math.Floor(Math.Max(0, _rightCard.ClientSize.Height - _rightCard.Padding.Vertical) * 96.0 / DeviceDpi);
+        int copyHeight = available < 136 ? 44 : 58;
+        int titleHeight = available < 30 + copyHeight + 48 ? 0 : 30;
+        int hintHeight = available >= titleHeight + copyHeight + 48 + 56 + 28 ? 28 : 0;
+        int previewHeight = Math.Min(128, Math.Max(0, available - titleHeight - copyHeight - hintHeight - 48));
+        if (previewHeight < 56) previewHeight = 0;
+        _inspectorLayout.SetRowHeight(0, titleHeight);
+        _inspectorLayout.SetRowHeight(1, previewHeight);
+        _inspectorLayout.SetRowHeight(3, copyHeight);
+        _inspectorLayout.SetRowHeight(4, hintHeight);
     }
 
     protected override void OnHandleDestroyed(EventArgs e)
@@ -330,19 +330,20 @@ public class MainDashboardForm : Form
         int row = 0;
         foreach (var format in _settings.ActiveFormats)
         {
-            _formatsContainer.RowStyles.Add(new RowStyle(SizeType.Absolute, S(40)));
+            _formatsContainer.RowStyles.Add(new RowStyle(SizeType.Absolute, S(48)));
             var line = new TableLayoutPanel { ColumnCount = 3, RowCount = 1, Dock = DockStyle.Fill, Margin = Padding.Empty };
-            line.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, S(45)));
+            line.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+            line.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, S(48)));
             line.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            line.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, S(52)));
+            line.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, S(80)));
             var label = StudioTheme.Label(ColorDetails.GetFormatLabel(format), StudioTheme.Small, StudioTheme.Muted);
             var box = new TextBox
             {
                 Name = $"Value{format}", ReadOnly = true, BorderStyle = BorderStyle.None,
                 BackColor = StudioTheme.Surface, ForeColor = StudioTheme.Text, Font = StudioTheme.Mono,
-                Dock = DockStyle.Fill, Margin = new Padding(0, S(11), S(5), 0), AccessibleName = $"{format} color value"
+                Dock = DockStyle.Fill, Margin = new Padding(0, S(14), S(5), 0), AccessibleName = $"{format} color value"
             };
-            var copy = new StudioButton { Text = "Copy", Name = $"Copy{format}", Font = StudioTheme.Small, Dock = DockStyle.Fill, Margin = new Padding(0, S(4), 0, S(4)), AccessibleName = $"Copy {format}" };
+            var copy = new StudioButton { Text = "Copy", Name = $"Copy{format}", Font = StudioTheme.Small, Dock = DockStyle.Fill, Margin = new Padding(0, S(5), 0, S(5)), AccessibleName = $"Copy {format}" };
             copy.Click += (_, _) => CopyTextToClipboard(box.Text, $"Copied {ColorDetails.GetFormatLabel(format)}");
             line.Controls.Add(label, 0, 0);
             line.Controls.Add(box, 1, 0);
@@ -351,25 +352,7 @@ public class MainDashboardForm : Form
             _formatsContainer.Controls.Add(line, 0, row++);
         }
         _formatsContainer.ResumeLayout(true);
-        _colorListView.BeginUpdate();
-        _colorListView.Columns.Clear();
-        _colorListView.Columns.Add("", 52);
-        _colorListView.Columns.Add(ColorDetails.GetFormatLabel(_settings.ActiveFormats[0]), 220);
-        _colorListView.Columns.Add("SHARE", 146);
-        _colorListView.Columns.Add("PIXELS", 100, HorizontalAlignment.Right);
-        ResizePaletteColumns();
-        _colorListView.EndUpdate();
         if (_currentPalette.Count > 0) UpdatePaletteList(_currentPalette, _lblStatus.Text);
-    }
-
-    private void ResizePaletteColumns()
-    {
-        if (_colorListView.Columns.Count != 4) return;
-        int S(int value) => (int)Math.Round(value * DeviceDpi / 96f);
-        _colorListView.Columns[0].Width = S(52);
-        _colorListView.Columns[2].Width = S(146);
-        _colorListView.Columns[3].Width = S(100);
-        _colorListView.Columns[1].Width = Math.Max(S(150), _colorListView.ClientSize.Width - S(298) - 4);
     }
 
     private void OpenSettingsDialog()
@@ -418,11 +401,16 @@ public class MainDashboardForm : Form
         bool wasMinimized = WindowState == FormWindowState.Minimized;
         try
         {
-            if (wasVisible) Hide();
-            // Let the compositor remove the dashboard before taking the frozen snapshot.
-            await Task.Delay(150);
-            if (IsDisposed || _allowExit) return;
-            using var overlay = new ScreenOverlayForm(mode);
+            _trayIcon.ContextMenuStrip?.Close();
+            _cmbExportFormat.CloseDropDown();
+            ScreenOverlayForm overlay;
+            using (var hidden = new DesktopCaptureScope(this))
+            {
+                await hidden.WaitForDesktopAsync();
+                if (IsDisposed || _allowExit) return;
+                overlay = new ScreenOverlayForm(mode);
+            }
+            using var captured = overlay;
             var result = overlay.ShowDialog();
             if (result != DialogResult.OK)
             {
@@ -492,25 +480,12 @@ public class MainDashboardForm : Form
     internal void UpdatePaletteList(List<ColorDetails> palette, string statusMessage)
     {
         _currentPalette = palette;
-        _colorListView.BeginUpdate();
-        _colorListView.Items.Clear();
-        foreach (var color in palette)
-        {
-            var item = new ListViewItem("") { Tag = color, ImageIndex = 0 };
-            item.SubItems.Add(color.GetValue(_settings.ActiveFormats[0]));
-            item.SubItems.Add($"{color.Percentage:F1}%");
-            item.SubItems.Add($"{color.PixelCount:N0}");
-            item.ToolTipText = PaletteExporter.FormatSingleColorSummary(color, _settings.ActiveFormats);
-            _colorListView.Items.Add(item);
-        }
-        _colorListView.EndUpdate();
+        _colorListView.SetPalette(palette, _settings.ActiveFormats);
         _lblPaletteCount.Text = $"YOUR PALETTE   /   {palette.Count:N0} {(palette.Count == 1 ? "COLOR" : "COLORS")}";
         _paletteStrip.Colors = palette;
         _paletteStrip.Invalidate();
         if (palette.Count > 0)
         {
-            _colorListView.Items[0].Selected = true;
-            _colorListView.Items[0].Focused = true;
             DisplaySelectedColor(palette[0]);
         }
         _lblStatus.Text = statusMessage;
@@ -528,61 +503,17 @@ public class MainDashboardForm : Form
             }
     }
 
-    private void DrawColorListSubItem(object? sender, DrawListViewSubItemEventArgs e)
-    {
-        if (e.Item?.Tag is not ColorDetails color) return;
-        int S(int value) => (int)Math.Round(value * DeviceDpi / 96f);
-        var g = e.Graphics;
-        bool selected = e.Item.Selected;
-        using var background = new SolidBrush(selected ? Color.FromArgb(43, 39, 61) : e.ItemIndex % 2 == 0 ? StudioTheme.Surface : Color.FromArgb(25, 28, 38));
-        g.FillRectangle(background, e.Bounds);
-        if (e.ColumnIndex == 0)
-        {
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-            if (selected)
-            {
-                using var indicator = new SolidBrush(StudioTheme.Accent);
-                g.FillRectangle(indicator, e.Bounds.X, e.Bounds.Y + S(9), S(3), e.Bounds.Height - S(18));
-            }
-            var swatch = new Rectangle(e.Bounds.X + S(13), e.Bounds.Y + (e.Bounds.Height - S(26)) / 2, S(26), S(26));
-            using var path = StudioTheme.Round(swatch, S(6));
-            using var fill = new SolidBrush(color.RawColor);
-            using var border = new Pen(Color.FromArgb(100, StudioTheme.Muted));
-            g.FillPath(fill, path);
-            g.DrawPath(border, path);
-        }
-        else if (e.ColumnIndex == 2)
-        {
-            var label = new Rectangle(e.Bounds.X + S(8), e.Bounds.Y, S(51), e.Bounds.Height);
-            TextRenderer.DrawText(g, e.SubItem?.Text, StudioTheme.Small, label, StudioTheme.Text,
-                TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
-            var track = new Rectangle(e.Bounds.X + S(65), e.Bounds.Y + e.Bounds.Height / 2 - S(2), Math.Max(1, e.Bounds.Width - S(82)), S(4));
-            using var trackBrush = new SolidBrush(StudioTheme.Border);
-            using var fillBrush = new SolidBrush(selected ? StudioTheme.Accent : StudioTheme.Mint);
-            g.FillRectangle(trackBrush, track);
-            g.FillRectangle(fillBrush, track.X, track.Y, (int)(track.Width * Math.Clamp(color.Percentage, 0, 100) / 100), track.Height);
-        }
-        else
-        {
-            var rect = e.Bounds; rect.Inflate(-S(8), 0);
-            var flags = TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix;
-            flags |= e.ColumnIndex == 3 ? TextFormatFlags.Right : TextFormatFlags.Left;
-            TextRenderer.DrawText(g, e.SubItem?.Text, StudioTheme.Mono, rect,
-                e.ColumnIndex == 3 ? StudioTheme.Muted : StudioTheme.Text, flags);
-        }
-    }
-
     private void CopyPrimaryColor()
     {
-        if (_colorListView.SelectedItems.Count == 0 || _colorListView.SelectedItems[0].Tag is not ColorDetails color) return;
+        if (_colorListView.SelectedColor is not { } color) return;
         var format = _settings.ActiveFormats[0];
         CopyTextToClipboard(color.GetValue(format), $"Copied {ColorDetails.GetFormatLabel(format)}: {color.GetValue(format)}");
     }
 
     private void CopySingleColorSummary()
     {
-        if (_colorListView.SelectedIndices.Count == 0 && _currentPalette.Count == 0) return;
-        int idx = _colorListView.SelectedIndices.Count > 0 ? _colorListView.SelectedIndices[0] : 0;
+        if (_currentPalette.Count == 0) return;
+        int idx = Math.Max(0, _colorListView.SelectedIndex);
         var color = _currentPalette[idx];
 
         string summary = PaletteExporter.FormatSingleColorSummary(color, _settings.ActiveFormats);
@@ -621,7 +552,7 @@ public class MainDashboardForm : Form
 
         using var b1 = new SolidBrush(StudioTheme.Accent);
         using var b2 = new SolidBrush(StudioTheme.Mint);
-        using var b3 = new SolidBrush(StudioTheme.Danger);
+        using var b3 = new SolidBrush(StudioTheme.Raised);
         using var pen = new Pen(Color.White, 2f);
 
         g.FillEllipse(b1, 2, 2, 18, 18);
@@ -653,8 +584,6 @@ public class MainDashboardForm : Form
             _lastRegionBitmap?.Dispose();
             _appIcon.Dispose();
             _tips.Dispose();
-            _rowImages.Dispose();
-            _rowSpacer.Dispose();
             _logoImage?.Dispose();
         }
         base.Dispose(disposing);

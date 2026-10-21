@@ -1,5 +1,6 @@
 using System.Drawing;
 using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using ChromaTray.Forms;
 using ChromaTray.Models;
@@ -74,18 +75,24 @@ public class OverlayKeyboardTests
         Exception? failure = null;
         var thread = new Thread(() =>
         {
+            IntPtr previousDpi = IntPtr.Zero;
             try
             {
                 Application.SetUnhandledExceptionMode(UnhandledExceptionMode.ThrowException, threadScope: true);
+                previousDpi = SetThreadDpiAwarenessContext(new IntPtr(-4));
                 action();
             }
             catch (Exception ex) { failure = ex; }
+            finally { if (previousDpi != IntPtr.Zero) SetThreadDpiAwarenessContext(previousDpi); }
         }) { IsBackground = true };
         thread.SetApartmentState(ApartmentState.STA);
         thread.Start();
         Assert.True(thread.Join(TimeSpan.FromSeconds(20)), "Windows UI test timed out.");
         if (failure is not null) ExceptionDispatchInfo.Capture(failure).Throw();
     }
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr SetThreadDpiAwarenessContext(IntPtr context);
 
     private sealed class OverlayHarness(CaptureMode mode, Bitmap bitmap, Action<Point> moveCursor)
         : ScreenOverlayForm(mode, bitmap, new Rectangle(-100, -50, 10, 10), [new(-100, -50, 10, 10)], moveCursor, new(-95, -45))

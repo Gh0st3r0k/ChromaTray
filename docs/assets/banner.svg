@@ -3,12 +3,12 @@
   <desc id="desc">Illustration of the screen color picker, with blue, green, pink, amber and purple palette swatches.</desc>
   <defs>
     <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#12141e"/><stop offset="1" stop-color="#222536"/></linearGradient>
-    <linearGradient id="line"><stop stop-color="#b5a6ff"/><stop offset=".5" stop-color="#74e1c1"/><stop offset="1" stop-color="#ff99a6"/></linearGradient>
+    <linearGradient id="line"><stop stop-color="#98ded9"/><stop offset=".5" stop-color="#c7ffd8"/><stop offset="1" stop-color="#0b2f9f"/></linearGradient>
   </defs>
   <rect width="1120" height="380" rx="24" fill="url(#bg)"/>
-  <rect x="40" y="40" width="44" height="44" rx="13" fill="#0e1016"/>
-  <circle cx="56" cy="56" r="11" fill="#b5a6ff"/><circle cx="70" cy="58" r="11" fill="#74e1c1"/>
-  <circle cx="63" cy="71" r="11" fill="#ff99a6" stroke="white"/>
+  <rect x="40" y="40" width="44" height="44" rx="13" fill="#161d6f"/>
+  <circle cx="56" cy="56" r="11" fill="#98ded9"/><circle cx="70" cy="58" r="11" fill="#c7ffd8"/>
+  <circle cx="63" cy="71" r="11" fill="#0b2f9f" stroke="white"/>
   <g font-family="Segoe UI, Arial, sans-serif">
     <text x="100" y="69" fill="#a7afc6" font-size="14" letter-spacing="3">YOUR SCREEN. YOUR COLORS.</text>
     <text x="40" y="161" fill="#f4f6ff" font-size="64" font-weight="700" letter-spacing="-2">ChromaTray</text>
@@ -22,14 +22,14 @@
     <rect x="638" y="40" width="438" height="300" rx="16" fill="#181b29" stroke="#353a50"/>
     <text x="664" y="75" fill="#e9edff" font-size="15" font-weight="600">A palette, one selection away.</text>
     <text x="664" y="99" fill="#8590aa" font-size="12">ILLUSTRATIVE PALETTE</text>
-    <rect x="664" y="120" width="78" height="136" rx="10" fill="#b5a6ff"/>
-    <rect x="748" y="120" width="68" height="136" rx="10" fill="#74e1c1"/>
-    <rect x="822" y="120" width="68" height="136" rx="10" fill="#ff99a6"/>
+    <rect x="664" y="120" width="78" height="136" rx="10" fill="#98ded9"/>
+    <rect x="748" y="120" width="68" height="136" rx="10" fill="#c7ffd8"/>
+    <rect x="822" y="120" width="68" height="136" rx="10" fill="#0b2f9f"/>
     <rect x="896" y="120" width="68" height="136" rx="10" fill="#f59e0b"/>
     <rect x="970" y="120" width="80" height="136" rx="10" fill="#8b5cf6"/>
-    <text x="664" y="288" fill="#e9edff" font-family="Consolas, monospace" font-size="17">#B5A6FF</text>
+    <text x="664" y="288" fill="#e9edff" font-family="Consolas, monospace" font-size="17">#98DED9</text>
     <text x="664" y="313" fill="#8590aa" font-size="12">HEX  /  RGB  /  HSL  /  HSV  /  CMYK</text>
-    <rect x="966" y="275" width="84" height="39" rx="8" fill="#b5a6ff"/>
+    <rect x="966" y="275" width="84" height="39" rx="8" fill="#98ded9"/>
     <text x="989" y="300" fill="#fff" font-size="14" font-weight="600">Copy</text>
   </g>
 </svg>

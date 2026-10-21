@@ -21,4 +21,8 @@
     <DefaultItemExcludes>$(DefaultItemExcludes);ChromaTray.Tests/**;ChromaTray.Core.Tests/**</DefaultItemExcludes>
   </PropertyGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="assets/Picker.cur" LogicalName="ChromaTray.Picker.cur" />
+  </ItemGroup>
+
 </Project>

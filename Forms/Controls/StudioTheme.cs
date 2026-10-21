@@ -5,15 +5,16 @@ namespace ChromaTray.Forms.Controls;
 
 internal static class StudioTheme
 {
-    public static readonly Color Canvas = Color.FromArgb(14, 16, 22);
-    public static readonly Color Surface = Color.FromArgb(22, 25, 34);
-    public static readonly Color Raised = Color.FromArgb(30, 34, 46);
-    public static readonly Color Border = Color.FromArgb(43, 48, 64);
-    public static readonly Color Text = Color.FromArgb(239, 242, 250);
-    public static readonly Color Muted = Color.FromArgb(151, 160, 183);
-    public static readonly Color Accent = Color.FromArgb(181, 166, 255);
-    public static readonly Color Mint = Color.FromArgb(116, 225, 193);
-    public static readonly Color Danger = Color.FromArgb(255, 153, 166);
+    // Reference palette: #161D6F / #0B2F9F / #98DED9 / #C7FFD8.
+    public static readonly Color Canvas = Color.FromArgb(22, 29, 111);
+    public static readonly Color Surface = Color.FromArgb(25, 40, 121);
+    public static readonly Color Raised = Color.FromArgb(11, 47, 159);
+    public static readonly Color Border = Color.FromArgb(65, 91, 168);
+    public static readonly Color Text = Color.FromArgb(240, 255, 249);
+    public static readonly Color Muted = Color.FromArgb(165, 196, 222);
+    public static readonly Color Accent = Color.FromArgb(152, 222, 217);
+    public static readonly Color Mint = Color.FromArgb(199, 255, 216);
+    public static readonly Color Danger = Color.FromArgb(255, 184, 184);
     public static readonly Font Body = new("Segoe UI", 10f);
     public static readonly Font Small = new("Segoe UI", 9f);
     public static readonly Font Strong = new("Segoe UI Semibold", 10f);
@@ -42,9 +43,9 @@ internal static class StudioTheme
         BackColor = Color.Transparent, AutoEllipsis = true, Margin = Padding.Empty
     };
 
-    public static TableLayoutPanel Stack(params (Control Control, int Height)[] rows)
+    public static DpiStackPanel Stack(params (Control Control, int Height)[] rows)
     {
-        var stack = new TableLayoutPanel
+        var stack = new DpiStackPanel(rows.Select(row => row.Height).ToArray())
         {
             Dock = DockStyle.Fill, ColumnCount = 1, RowCount = rows.Length,
             Margin = Padding.Empty, Padding = Padding.Empty, BackColor = Color.Transparent
@@ -150,7 +151,7 @@ internal sealed class StudioButton : Button
         g.FillPath(brush, path);
         g.DrawPath(border, path);
 
-        int left = S(14);
+        int left = S(card ? 18 : 10);
         if (Glyph != StudioGlyph.None)
         {
             int glyphSize = S(card ? 22 : 16);
@@ -159,7 +160,7 @@ internal sealed class StudioButton : Button
             left += glyphSize + S(card ? 18 : 9);
         }
         int chipWidth = Shortcut.Length == 0 ? 0 : TextRenderer.MeasureText(Shortcut, StudioTheme.Small).Width + S(18);
-        var textRect = new Rectangle(left, card ? S(16) : 0, Math.Max(0, Width - left - chipWidth - S(22)), card ? S(28) : Height);
+        var textRect = new Rectangle(left, card ? S(16) : 0, Math.Max(0, Width - left - chipWidth - S(card ? 22 : 10)), card ? S(28) : Height);
         TextRenderer.DrawText(g, Text, Font, textRect, foreground,
             TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
         if (card)
@@ -269,9 +270,4 @@ internal sealed class PaletteStrip : Control
             x = next;
         }
     }
-}
-
-internal sealed class PaletteListView : ListView
-{
-    public PaletteListView() { DoubleBuffered = true; }
 }

@@ -91,7 +91,7 @@ public class SettingsForm : Form
         footer.Controls.Add(cancel, 1, 0);
         footer.Controls.Add(save, 2, 0);
         var root = StudioTheme.Stack((heading, 88), (body, -1), (_lblValidationNotice, 48), (footer, 48));
-        root.Padding = new Padding(24);
+        root.LogicalPadding = new Padding(24);
         Controls.Add(root);
     }
 

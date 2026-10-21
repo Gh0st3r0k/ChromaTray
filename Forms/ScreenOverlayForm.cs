@@ -13,6 +13,7 @@ public class ScreenOverlayForm : Form
     private readonly Rectangle _virtualBounds;
     private readonly Rectangle[] _displayBounds;
     private readonly Action<Point> _moveCursor;
+    private readonly Cursor? _pickerCursor;
     private Point _cursorPos;
     private Point _dragStart;
     private bool _isDragging;
@@ -45,7 +46,13 @@ public class ScreenOverlayForm : Form
         Bounds = virtualBounds;
         TopMost = true;
         DoubleBuffered = true;
-        Cursor = Cursors.Cross;
+        if (mode == CaptureMode.Point)
+        {
+            using var stream = typeof(ScreenOverlayForm).Assembly.GetManifestResourceStream("ChromaTray.Picker.cur")
+                ?? throw new InvalidOperationException("The point picker cursor resource is missing.");
+            _pickerCursor = new Cursor(stream);
+        }
+        Cursor = _pickerCursor ?? Cursors.Cross;
         KeyPreview = true;
         ShowInTaskbar = false;
         AccessibleName = mode == CaptureMode.Point ? "Point picker. Arrow keys move one pixel. Enter selects. Escape cancels." : "Region picker. Drag to select. Escape cancels.";
@@ -150,7 +157,7 @@ public class ScreenOverlayForm : Form
     {
         var g = e.Graphics;
         g.DrawImageUnscaled(_screenSnapshot, 0, 0);
-        using var dim = new SolidBrush(Color.FromArgb(_mode == CaptureMode.Point ? 55 : 110, StudioTheme.Canvas));
+        using var dim = new SolidBrush(Color.FromArgb(85, Color.Black));
         if (_mode == CaptureMode.Region && _isDragging)
         {
             var selected = GetNormalizedRect(_dragStart, _cursorPos);
@@ -165,27 +172,13 @@ public class ScreenOverlayForm : Form
             TextRenderer.DrawText(g, size, StudioTheme.Mono, badge, StudioTheme.Mint,
                 TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
         }
-        else g.FillRectangle(dim, ClientRectangle);
+        // Point mode displays the untouched snapshot, without a color tint.
+        // Region mode dims only the area outside an active selection.
         if (_mode == CaptureMode.Point)
         {
-            DrawCrosshair(g);
             DrawMagnifier(g);
         }
         DrawHint(g);
-    }
-
-    private void DrawCrosshair(Graphics g)
-    {
-        using var shadow = new Pen(Color.FromArgb(180, 0, 0, 0), 3);
-        using var light = new Pen(Color.White, 1);
-        int x = _cursorPos.X, y = _cursorPos.Y;
-        foreach (var pen in new[] { shadow, light })
-        {
-            g.DrawLine(pen, x - 16, y, x - 5, y);
-            g.DrawLine(pen, x + 5, y, x + 16, y);
-            g.DrawLine(pen, x, y - 16, x, y - 5);
-            g.DrawLine(pen, x, y + 5, x, y + 16);
-        }
     }
 
     private void DrawMagnifier(Graphics g)
@@ -282,5 +275,6 @@ public class ScreenOverlayForm : Form
     {
         if (disposing) { _screenSnapshot.Dispose(); PickedRegionBitmap?.Dispose(); }
         base.Dispose(disposing);
+        if (disposing) _pickerCursor?.Dispose();
     }
 }

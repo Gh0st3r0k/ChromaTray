@@ -2,6 +2,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Windows.Forms;
 using ChromaTray.Forms;
+using ChromaTray.Forms.Controls;
 using ChromaTray.Models;
 using Xunit;
 
@@ -49,13 +50,12 @@ public class DesignLayoutTests
                 ColorDetails.FromColor(Color.FromArgb(117, 169, 255), 40, 4)
             ], "Region 40×25 px · 1,000 pixels · 5 colors");
             SavePreview(dashboard, "dashboard.png");
-            var table = Assert.IsAssignableFrom<ListView>(Assert.Single(dashboard.Controls.Find("PaletteTable", true)));
-            table.Items[0].Selected = false;
-            table.Items[1].Selected = true;
+            var table = Assert.IsType<PaletteGrid>(Assert.Single(dashboard.Controls.Find("PaletteTable", true)));
+            table.SelectedIndex = 1;
             var hex = Assert.IsType<TextBox>(Assert.Single(dashboard.Controls.Find("ValueHex", true)));
             Assert.Equal("#74E1C1", hex.Text);
-            Assert.Equal(5, table.Items.Count);
-            Assert.Contains("#74E1C1", table.Items[1].ToolTipText);
+            Assert.Equal(5, table.Colors.Count);
+            Assert.Contains("#74E1C1", table.TooltipFor(1));
             using var settings = new SettingsForm(new AppSettings());
             settings.Show();
             SavePreview(settings, "settings.png");
