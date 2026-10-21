@@ -16,6 +16,7 @@ public class FormConstructionTests
         {
             try
             {
+                System.Windows.Forms.Application.SetUnhandledExceptionMode(System.Windows.Forms.UnhandledExceptionMode.ThrowException, threadScope: true);
                 using var dashboard = new MainDashboardForm();
                 using var settings = new SettingsForm(new AppSettings());
                 Assert.NotEqual(IntPtr.Zero, dashboard.Handle);

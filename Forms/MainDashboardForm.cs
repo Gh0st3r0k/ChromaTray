@@ -38,6 +38,7 @@ public class MainDashboardForm : Form
     private readonly Icon _appIcon;
     private readonly ToolTip _tips = new();
     private readonly ImageList _rowImages;
+    private Bitmap _rowSpacer;
     private readonly Image? _logoImage;
     private readonly Label _lblPaletteCount;
     private readonly PaletteStrip _paletteStrip;
@@ -129,7 +130,10 @@ public class MainDashboardForm : Form
         _paletteStrip = new PaletteStrip { Name = "PaletteOverview", Margin = new Padding(0, 10, 0, 10) };
 
         _rowImages = new ImageList { ImageSize = new Size(1, 40), ColorDepth = ColorDepth.Depth32Bit };
-        using (var spacer = new Bitmap(1, 40)) _rowImages.Images.Add(spacer);
+        // ImageList can defer native image creation until the ListView gets a
+        // handle. Retain the source bitmap for that deferred conversion.
+        _rowSpacer = new Bitmap(1, 40);
+        _rowImages.Images.Add(_rowSpacer);
         _colorListView = new PaletteListView
         {
             Name = "PaletteTable", Dock = DockStyle.Fill, View = View.Details, FullRowSelect = true,
@@ -251,9 +255,10 @@ public class MainDashboardForm : Form
         int height = Math.Clamp((int)Math.Round(40 * DeviceDpi / 96f), 24, 256);
         if (_rowImages.ImageSize.Height == height) return;
         _rowImages.Images.Clear();
+        _rowSpacer.Dispose();
         _rowImages.ImageSize = new Size(1, height);
-        using var spacer = new Bitmap(1, height);
-        _rowImages.Images.Add(spacer);
+        _rowSpacer = new Bitmap(1, height);
+        _rowImages.Images.Add(_rowSpacer);
     }
 
     protected override void OnHandleDestroyed(EventArgs e)
@@ -649,6 +654,7 @@ public class MainDashboardForm : Form
             _appIcon.Dispose();
             _tips.Dispose();
             _rowImages.Dispose();
+            _rowSpacer.Dispose();
             _logoImage?.Dispose();
         }
         base.Dispose(disposing);
