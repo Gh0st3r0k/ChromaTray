@@ -94,9 +94,9 @@ public class PaletteAnalyzerTests
             "CT-SCAN-003B", "Services/PaletteAnalyzer", "Quantized mode merges step-8 neighbors", "Pixels: (14,15,16), (16,16,16), (18,17,15)",
             "Check quantization rounding formula: Math.Min(255, (channel + 4) / 8 * 8).");
 
-        DiagAssert.Equal("#101010", grouped.Palette[0].Hex,
-            "CT-SCAN-003C", "Services/PaletteAnalyzer", "Quantized bucket center value", "Values 14..18 quantized to 16 (0x10)",
-            "16 in hex is 10, so quantized color must be #101010.");
+        DiagAssert.Equal("#0E0F10", grouped.Palette[0].Hex,
+            "CT-SCAN-003C", "Services/PaletteAnalyzer", "Representative is an actual source RGB", "Three equally frequent shades in one bucket",
+            "Break frequency ties by RGB. Do not output the synthetic bucket center #101010.");
     }
 
     [Fact(DisplayName = "[CT-SCAN-004] MaxResults cap limits UI list size while preserving UniqueColorsFound")]

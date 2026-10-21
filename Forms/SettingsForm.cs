@@ -74,7 +74,7 @@ public class SettingsForm : Form
         }
         _chkGroupSimilar = new CheckBox
         {
-            Name = "SettingsGroupSimilarToggle", Text = "Group similar shades (round RGB)",
+            Name = "SettingsGroupSimilarToggle", Text = "Group similar shades (region only)",
             Checked = currentSettings.GroupSimilarColors, ForeColor = StudioTheme.Accent,
             Font = StudioTheme.Small, Dock = DockStyle.Fill, Margin = Padding.Empty,
             Cursor = Cursors.Hand,

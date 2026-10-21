@@ -28,9 +28,33 @@ public class PaletteHistogramTests
         histogram.AddBgraRow([16, 15, 14, 255, 16, 16, 16, 255, 15, 17, 18, 255, 255, 255, 255, 255]);
         var result = histogram.Complete(500);
         Assert.Equal(2, result.UniqueColorsFound);
-        Assert.Equal("#101010", result.Palette[0].Hex);
+        Assert.Equal("#0E0F10", result.Palette[0].Hex);
         Assert.Equal(75, result.Palette[0].Percentage);
         Assert.Equal("#FFFFFF", result.Palette[1].Hex);
+    }
+
+    [Fact]
+    public void Grouping_UsesMostFrequentActualRgbEvenWhenTheBucketCenterIsAbsent()
+    {
+        var histogram = new PaletteHistogram(true);
+        histogram.AddBgraRow([16, 15, 14, 255]);
+        Assert.Equal("#0E0F10", Assert.Single(histogram.Complete(500).Palette).Hex);
+        histogram.AddBgraRow([15, 17, 18, 255, 15, 17, 18, 255]);
+        var group = Assert.Single(histogram.Complete(500).Palette);
+        Assert.Equal("#12110F", group.Hex);
+        Assert.Equal(3, group.PixelCount);
+        Assert.Equal(100, group.Percentage);
+    }
+
+    [Fact]
+    public void Grouping_TiesAreIndependentOfPixelScanOrder()
+    {
+        var forward = new PaletteHistogram(true);
+        var reverse = new PaletteHistogram(true);
+        forward.AddBgraRow([16, 15, 14, 255, 15, 17, 18, 255]);
+        reverse.AddBgraRow([15, 17, 18, 255, 16, 15, 14, 255]);
+        Assert.Equal("#0E0F10", Assert.Single(forward.Complete(500).Palette).Hex);
+        Assert.Equal(forward.Complete(500).Palette, reverse.Complete(500).Palette);
     }
 
     [Fact]
