@@ -44,6 +44,12 @@ public class AppearanceRegressionTests
             Assert.True(Find(dashboard, "FormatsViewport").Height >= 48 * dpi / 96, "The inspector cannot display one complete format row.");
             SavePreview(dashboard, $"inspector-dpi-{dpi}.png");
             SwitchWorkspace(dashboard, "PaletteViewButton");
+            var grouping = Assert.IsType<CheckBox>(Find(dashboard, "GroupSimilarToggle"));
+            Assert.True(grouping.Visible, "The grouping option is hidden.");
+            AssertContainedByAncestors(grouping, dashboard);
+            var required = TextRenderer.MeasureText(grouping.Text, grouping.Font);
+            Assert.True(grouping.Width >= required.Width + 24 * dpi / 96, "The grouping option's text is clipped.");
+            Assert.True(grouping.Height >= required.Height, "The grouping option is too short.");
             AssertContainedByAncestors(Find(dashboard, "ExportPaletteButton"), dashboard);
             var palette = Find(dashboard, "PaletteTable");
             Assert.True(palette.Height >= 72 * dpi / 96, $"The palette cannot display one complete row at DPI {dpi} (height {palette.Height}).");
@@ -117,6 +123,59 @@ public class AppearanceRegressionTests
             }
             dashboard.Show();
             Assert.True(DesktopCaptureScope.IsWindowVisible(dashboard.Handle));
+        });
+    }
+
+    [Fact]
+    public void Settings_ExposesGroupingAndCancelLeavesTheLiveSettingsAlone()
+    {
+        OverlayKeyboardTests.OnSta(() =>
+        {
+            var live = new AppSettings { GroupSimilarColors = false };
+            using var settings = new SettingsForm(live);
+            settings.Show();
+            var grouping = Assert.IsType<CheckBox>(Find(settings, "SettingsGroupSimilarToggle"));
+            Assert.True(grouping.Visible);
+            AssertContainedByAncestors(grouping, settings);
+            Assert.False(grouping.Checked);
+            grouping.Checked = true;
+            Assert.False(live.GroupSimilarColors);
+            Assert.IsAssignableFrom<Button>(Find(settings, "CancelSettingsButton")).PerformClick();
+            Assert.False(live.GroupSimilarColors);
+        });
+    }
+
+    [Fact]
+    public void Magnifier_EnlargesExistingColorFringesWithoutBlendingTheirRgb()
+    {
+        OverlayKeyboardTests.OnSta(() =>
+        {
+            // A ClearType-like edge, including tinted pixels that must stay
+            // distinct. Removing their tint would change the actual screenshot.
+            Color[] pixels = [Color.FromArgb(7, 7, 7), Color.FromArgb(0, 145, 183),
+                Color.FromArgb(153, 206, 236), Color.FromArgb(238, 235, 220),
+                Color.FromArgb(132, 0, 0), Color.White];
+            var source = new Bitmap(960, 640);
+            using (var graphics = Graphics.FromImage(source)) graphics.Clear(pixels[0]);
+            for (int row = 0; row < 11; row++)
+                for (int col = 0; col < 11; col++) source.SetPixel(295 + col, 275 + row, pixels[col % pixels.Length]);
+            using var overlay = new ScreenOverlayForm(CaptureMode.Point, source, new Rectangle(0, 0, 960, 640),
+                [new(0, 0, 960, 640)], _ => { }, new(300, 280));
+            _ = overlay.Handle;
+            using var rendered = new Bitmap(960, 640);
+            overlay.DrawToBitmap(rendered, new Rectangle(0, 0, 960, 640));
+            int S(int value) => (int)Math.Round(value * overlay.DeviceDpi / 96f);
+            int x = 300 + S(30), y = 280 + S(30);
+            if (x + S(346) + S(12) > 960) x = 300 - S(346) - S(30);
+            if (y + S(268) + S(12) > 640) y = 280 - S(268) - S(30);
+            x = Math.Clamp(x, S(12), Math.Max(S(12), 960 - S(346) - S(12)));
+            y = Math.Clamp(y, S(12), Math.Max(S(12), 640 - S(268) - S(12)));
+            for (int col = 0; col < 11; col++)
+            {
+                // Sample away from the grid lines and the selected-cell outline.
+                var actual = rendered.GetPixel(x + S(16) + col * S(14) + S(14) / 2, y + S(46) + 2 * S(14) + S(14) / 2);
+                Assert.Equal(pixels[col % pixels.Length].ToArgb(), actual.ToArgb());
+            }
         });
     }
 

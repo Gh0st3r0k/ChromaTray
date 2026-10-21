@@ -14,6 +14,7 @@ public class SettingsForm : Form
 
     private readonly TextBox _txtPointHotkey;
     private readonly TextBox _txtRegionHotkey;
+    private readonly CheckBox _chkGroupSimilar;
     private readonly Dictionary<ColorFormat, CheckBox> _formatCheckboxes = new();
     private readonly Label _lblValidationNotice;
 
@@ -71,10 +72,18 @@ public class SettingsForm : Form
             _formatCheckboxes[format] = check;
             formats.Controls.Add(check, 0, index++);
         }
+        _chkGroupSimilar = new CheckBox
+        {
+            Name = "SettingsGroupSimilarToggle", Text = "Group similar shades (round RGB)",
+            Checked = currentSettings.GroupSimilarColors, ForeColor = StudioTheme.Accent,
+            Font = StudioTheme.Small, Dock = DockStyle.Fill, Margin = Padding.Empty,
+            Cursor = Cursors.Hand,
+            AccessibleDescription = "Region palette only. Leave off for exact screen RGB values. This does not remove ClearType from the screen."
+        };
         formatsCard.Controls.Add(StudioTheme.Stack(
             (StudioTheme.Label("COLOR FORMATS", StudioTheme.Strong, StudioTheme.Mint), 28),
             (StudioTheme.Label("Keep at least one. The first enabled format is used for quick copy.", StudioTheme.Small, StudioTheme.Muted), 30),
-            (formats, -1)));
+            (formats, -1), (_chkGroupSimilar, 32)));
         var body = StudioTheme.Stack((hotkeys, 188), (new Panel { Margin = Padding.Empty }, 16), (formatsCard, -1));
         _lblValidationNotice = StudioTheme.Label("", StudioTheme.Small, StudioTheme.Danger);
         _lblValidationNotice.Name = "ValidationNotice";
@@ -164,7 +173,7 @@ public class SettingsForm : Form
             PointHotkey = _tempPointHotkey,
             RegionHotkey = _tempRegionHotkey,
             ActiveFormats = activeFormats,
-            GroupSimilarColors = _settings.GroupSimilarColors
+            GroupSimilarColors = _chkGroupSimilar.Checked
         };
         try { candidate.Save(); }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -175,6 +184,7 @@ public class SettingsForm : Form
         _settings.PointHotkey = candidate.PointHotkey;
         _settings.RegionHotkey = candidate.RegionHotkey;
         _settings.ActiveFormats = candidate.ActiveFormats;
+        _settings.GroupSimilarColors = candidate.GroupSimilarColors;
         DialogResult = DialogResult.OK;
         Close();
     }

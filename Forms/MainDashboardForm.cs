@@ -137,25 +137,25 @@ public class MainDashboardForm : Form
         _chkGroupSimilar = new CheckBox
         {
             Name = "GroupSimilarToggle", Text = "Group similar shades", Checked = _settings.GroupSimilarColors,
-            ForeColor = StudioTheme.Muted, Font = StudioTheme.Small, AutoSize = true, Dock = DockStyle.Right,
+            ForeColor = StudioTheme.Accent, Font = StudioTheme.Small, AutoSize = false, Dock = DockStyle.Fill,
             Cursor = Cursors.Hand, Margin = Padding.Empty, AccessibleDescription = "Merge similar RGB shades and recalculate the last region."
         };
         _chkGroupSimilar.CheckedChanged += (_, _) =>
         {
-            _settings.GroupSimilarColors = _chkGroupSimilar.Checked;
-            try { _settings.Save(); }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            if (_settings.GroupSimilarColors != _chkGroupSimilar.Checked)
             {
-                MessageBox.Show(this, $"Could not save settings: {ex.Message}", "ChromaTray", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                _settings.GroupSimilarColors = _chkGroupSimilar.Checked;
+                try { _settings.Save(); }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    MessageBox.Show(this, $"Could not save settings: {ex.Message}", "ChromaTray", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
             if (_lastRegionBitmap != null) RunRegionAnalysis(_lastRegionBitmap);
         };
-        var paletteHeader = new TableLayoutPanel { ColumnCount = 2, RowCount = 1, Margin = Padding.Empty };
-        paletteHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        paletteHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        paletteHeader.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-        paletteHeader.Controls.Add(_lblPaletteCount, 0, 0);
-        paletteHeader.Controls.Add(_chkGroupSimilar, 1, 0);
+        // Give this option its own full-width row. An AutoSize column beside a
+        // long palette title could place it outside the visible card.
+        var paletteHeader = StudioTheme.Stack((_lblPaletteCount, 24), (_chkGroupSimilar, 28));
         _paletteStrip = new PaletteStrip { Name = "PaletteOverview", Margin = new Padding(0, 10, 0, 10) };
 
         _colorListView = new PaletteGrid { Name = "PaletteTable", Dock = DockStyle.Fill, Margin = Padding.Empty };
@@ -184,7 +184,7 @@ public class MainDashboardForm : Form
         exportRow.Controls.Add(_cmbExportFormat, 0, 0);
         exportRow.Controls.Add(exportButton, 1, 0);
         _paletteLayout = StudioTheme.Stack(
-            (paletteHeader, 32), (_paletteStrip, 32), (_colorListView, -1),
+            (paletteHeader, 56), (_paletteStrip, 32), (_colorListView, -1),
             (StudioTheme.Label("Select a shade to explore its formats. Double-click to copy.", StudioTheme.Small, StudioTheme.Muted), 32),
             (exportRow, 52));
         _paletteCard.Controls.Add(_paletteLayout);
@@ -294,7 +294,7 @@ public class MainDashboardForm : Form
         _btnRegion.Description = compact ? "" : "Turn any part of your screen into a palette.";
         _btnPoint.Invalidate();
         _btnRegion.Invalidate();
-        _paletteLayout.SetRowHeight(0, compact ? 28 : 32);
+        _paletteLayout.SetRowHeight(0, 56);
         _paletteLayout.SetRowHeight(1, compact ? 0 : 32);
         _paletteLayout.SetRowHeight(3, compact ? 0 : 32);
         _paletteLayout.SetRowHeight(4, compact ? 48 : 52);
@@ -462,6 +462,7 @@ public class MainDashboardForm : Form
             using var dlg = new SettingsForm(_settings);
             if (dlg.ShowDialog(this) == DialogResult.OK)
             {
+                _chkGroupSimilar.Checked = _settings.GroupSimilarColors;
                 UpdateHotkeyLabels();
                 RebuildDynamicFormatLayout();
                 _lblStatus.Text = $"✔ Settings saved. Active color formats: {_settings.ActiveFormats.Count}.";
