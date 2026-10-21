@@ -61,6 +61,8 @@ public class ScreenOverlayForm : Form
     private static (Bitmap, Rectangle, Rectangle[]) CaptureDesktop()
     {
         var bounds = SystemInformation.VirtualScreen;
+        // Keep raw pixels throughout capture, sampling and cropping. No JPEG
+        // encoding or resizing: this is lossless, like PNG, without a file round-trip.
         var bitmap = new Bitmap(bounds.Width, bounds.Height, PixelFormat.Format32bppArgb);
         try
         {

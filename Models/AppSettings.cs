@@ -48,7 +48,7 @@ public class AppSettings
         ColorFormat.Cmyk
     ];
 
-    public bool GroupSimilarColors { get; set; } = true;
+    public bool GroupSimilarColors { get; set; } = false;
 
     private static string GetSettingsFilePath()
     {

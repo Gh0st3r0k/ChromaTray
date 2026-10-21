@@ -228,7 +228,7 @@ public class MainDashboardForm : Form
         _dashboardLayout.LogicalPadding = new Padding(24, 16, 24, 8);
         Controls.Add(_dashboardLayout);
         _tips.SetToolTip(_btnPoint, "Pick a pixel. Use arrow keys to move one pixel and Enter to select.");
-        _tips.SetToolTip(_chkGroupSimilar, "Round RGB channels in steps of 8 to combine nearby shades.");
+        _tips.SetToolTip(_chkGroupSimilar, "Rounds RGB channels in steps of 8 and changes reported colors. Leave off for exact screen RGB values.");
         UpdateHotkeyLabels();
         RebuildDynamicFormatLayout();
         var initial = ColorDetails.FromColor(StudioTheme.Accent);
