@@ -41,6 +41,8 @@ public class MainDashboardForm : Form
     private readonly TableLayoutPanel _workspace;
     private readonly StudioButton _settingsButton;
     private readonly DpiStackPanel _inspectorLayout;
+    private readonly DpiStackPanel _dashboardLayout;
+    private readonly DpiStackPanel _wordmark;
     private readonly Image? _logoImage;
     private readonly Label _lblPaletteCount;
     private readonly PaletteStrip _paletteStrip;
@@ -81,10 +83,10 @@ public class MainDashboardForm : Form
         var logo = new PictureBox { Image = _appIcon.ToBitmap(), SizeMode = PictureBoxSizeMode.CenterImage, Dock = DockStyle.Fill, Margin = new Padding(0, 0, 12, 0) };
         _logoImage = logo.Image;
         _header.Controls.Add(logo, 0, 0);
-        var wordmark = StudioTheme.Stack(
+        _wordmark = StudioTheme.Stack(
             (StudioTheme.Label("ChromaTray", StudioTheme.Title), 42),
             (StudioTheme.Label("A little color. A lot of possibility.", StudioTheme.Small, StudioTheme.Muted), 24));
-        _header.Controls.Add(wordmark, 1, 0);
+        _header.Controls.Add(_wordmark, 1, 0);
         _settingsButton = new StudioButton { Name = "SettingsButton", Text = "Settings", Glyph = StudioGlyph.Settings, Dock = DockStyle.Fill, Margin = new Padding(0, 14, 0, 14) };
         _settingsButton.Click += (_, _) => OpenSettingsDialog();
         _header.Controls.Add(_settingsButton, 2, 0);
@@ -181,6 +183,8 @@ public class MainDashboardForm : Form
         _inspectorLayout.SizeChanged += (_, _) => FitInspectorContent();
         _rightCard.Controls.Add(_inspectorLayout);
         _workspace = new TableLayoutPanel { ColumnCount = 2, RowCount = 1, Dock = DockStyle.Fill, Margin = Padding.Empty };
+        _workspace.Name = "PaletteWorkspace";
+        _workspace.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         _workspace.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         _workspace.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 408));
         _workspace.Controls.Add(paletteCard, 0, 0);
@@ -198,10 +202,10 @@ public class MainDashboardForm : Form
         footer.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 360));
         footer.Controls.Add(_lblStatus, 0, 0);
         footer.Controls.Add(trayHint, 1, 0);
-        var root = StudioTheme.Stack((_header, 80), (captureActions, 100), (new Panel { Margin = Padding.Empty }, 20), (_workspace, -1), (footer, 40));
-        root.Name = "DashboardLayout";
-        root.LogicalPadding = new Padding(24, 16, 24, 8);
-        Controls.Add(root);
+        _dashboardLayout = StudioTheme.Stack((_header, 80), (captureActions, 100), (new Panel { Margin = Padding.Empty }, 20), (_workspace, -1), (footer, 40));
+        _dashboardLayout.Name = "DashboardLayout";
+        _dashboardLayout.LogicalPadding = new Padding(24, 16, 24, 8);
+        Controls.Add(_dashboardLayout);
         _tips.SetToolTip(_btnPoint, "Pick a pixel. Use arrow keys to move one pixel and Enter to select.");
         _tips.SetToolTip(_chkGroupSimilar, "Round RGB channels in steps of 8 to combine nearby shades.");
         UpdateHotkeyLabels();
@@ -244,8 +248,30 @@ public class MainDashboardForm : Form
         _settingsButton.Margin = new Padding(0, S(14), 0, S(14));
         _workspace.ColumnStyles[1].Width = Math.Min(S(408), Math.Max(S(320), _workspace.ClientSize.Width * .43f));
         RebuildDynamicFormatLayout();
+        ApplyResponsiveLayout();
         PerformLayout();
         FitInspectorContent();
+    }
+
+    protected override void OnResize(EventArgs e)
+    {
+        base.OnResize(e);
+        if (_dashboardLayout is not null) ApplyResponsiveLayout();
+    }
+
+    private void ApplyResponsiveLayout()
+    {
+        bool compact = ClientSize.Height * 96.0 / DeviceDpi < 760;
+        _dashboardLayout.SetRowHeight(0, compact ? 64 : 80);
+        _dashboardLayout.SetRowHeight(1, compact ? 88 : 100);
+        _dashboardLayout.SetRowHeight(2, compact ? 12 : 20);
+        _dashboardLayout.SetRowHeight(4, compact ? 28 : 40);
+        _dashboardLayout.LogicalPadding = new Padding(24, compact ? 12 : 16, 24, compact ? 4 : 8);
+        _wordmark.SetRowHeight(1, compact ? 0 : 24);
+        var subtitle = _wordmark.GetControlFromPosition(0, 1);
+        if (subtitle is not null) subtitle.Visible = !compact;
+        int verticalMargin = (int)Math.Round((compact ? 10 : 14) * DeviceDpi / 96f);
+        _settingsButton.Margin = new Padding(0, verticalMargin, 0, verticalMargin);
     }
 
     private void FitInspectorContent()
