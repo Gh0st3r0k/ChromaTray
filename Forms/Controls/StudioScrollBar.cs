@@ -3,7 +3,7 @@ using System.Drawing.Drawing2D;
 namespace ChromaTray.Forms.Controls;
 
 /// <summary>
-/// Полоса прокрутки в цветах приложения. Value — смещение содержимого в физических пикселях.
+/// A themed scrollbar whose value is the content offset in physical pixels.
 /// </summary>
 internal sealed class StudioScrollBar : Control
 {

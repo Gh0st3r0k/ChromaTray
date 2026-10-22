@@ -3,7 +3,7 @@ using ChromaTray.Forms;
 namespace ChromaTray;
 
 /// <summary>
-/// Точка входа: настраивает WinForms, запрещает второй экземпляр и запускает главное окно.
+/// Initializes WinForms, prevents duplicate instances, and opens the main dashboard.
 /// </summary>
 internal static class Program
 {

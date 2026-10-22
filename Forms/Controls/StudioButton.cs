@@ -11,7 +11,7 @@ internal enum StudioGlyph
 }
 
 /// <summary>
-/// Рисует скруглённую кнопку и её состояния, сохраняя стандартную обработку клавиш WinForms.
+/// Paints a rounded button and its interaction states while retaining WinForms keyboard behavior.
 /// </summary>
 internal sealed class StudioButton : Button
 {

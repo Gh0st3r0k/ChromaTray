@@ -6,7 +6,7 @@ namespace ChromaTray.Forms.Controls;
 
 // Рисуем строки и прокрутку самостоятельно, чтобы Windows не добавляла белую рамку ListView.
 /// <summary>
-/// Таблица палитры с собственной прокруткой. Рисует только видимые строки, а не сотни дочерних контролов.
+/// A palette table with themed scrolling that paints only visible rows instead of creating a control for every color.
 /// </summary>
 internal sealed class PaletteGrid : Control
 {

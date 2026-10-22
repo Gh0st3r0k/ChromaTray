@@ -1,0 +1,75 @@
+name: Documentation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**/*.cs'
+      - 'ChromaTray.csproj'
+      - 'global.json'
+      - 'packages.lock.json'
+      - '.config/dotnet-tools.json'
+      - 'docs/site/**'
+      - 'docs/assets/logo.svg'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - '**/*.cs'
+      - 'ChromaTray.csproj'
+      - 'global.json'
+      - 'packages.lock.json'
+      - '.config/dotnet-tools.json'
+      - 'docs/site/**'
+      - 'docs/assets/logo.svg'
+      - '.github/workflows/docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build English documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Restore the pinned DocFX tool
+        run: dotnet tool restore
+      - name: Restore project references
+        run: dotnet restore ChromaTray.csproj --locked-mode
+      - name: Generate API metadata and build the site
+        run: dotnet docfx docs/site/docfx.json --warningsAsErrors
+      - uses: actions/upload-artifact@v4
+        with:
+          name: documentation-site
+          path: artifacts/docs-site
+          if-no-files-found: error
+      - uses: actions/upload-pages-artifact@v3
+        if: github.ref == 'refs/heads/main' && vars.DOCS_PUBLISH_ENABLED == 'true'
+        with:
+          path: artifacts/docs-site
+
+  deploy:
+    name: Publish to GitHub Pages
+    if: github.ref == 'refs/heads/main' && vars.DOCS_PUBLISH_ENABLED == 'true'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: documentation-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy the documentation artifact
+        id: deployment
+        uses: actions/deploy-pages@v4

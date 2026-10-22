@@ -3,7 +3,7 @@ using System.Drawing.Drawing2D;
 namespace ChromaTray.Forms.Controls;
 
 /// <summary>
-/// Поле выбора формата экспорта с оформленным меню вместо стандартного белого ComboBox.
+/// A keyboard-accessible export selector with a themed dropdown menu.
 /// </summary>
 internal sealed class StudioSelect : Control
 {

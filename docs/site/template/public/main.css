@@ -1,0 +1,66 @@
+/* Reuse the desktop app's palette while keeping documentation readable in both themes. */
+:root {
+  --chromatray-navy: #161d6f;
+  --chromatray-blue: #0b2f9f;
+  --chromatray-aqua: #98ded9;
+  --chromatray-mint: #c7ffd8;
+}
+
+[data-bs-theme="light"] {
+  --bs-link-color-rgb: 11, 47, 159;
+  --bs-link-hover-color-rgb: 22, 29, 111;
+}
+
+[data-bs-theme="dark"] {
+  --bs-link-color-rgb: 152, 222, 217;
+  --bs-link-hover-color-rgb: 199, 255, 216;
+}
+
+header.bg-body {
+  background: var(--chromatray-navy) !important;
+  --bs-body-color: #f0fff9;
+  --bs-emphasis-color: #f0fff9;
+  --bs-secondary-color: #98ded9;
+}
+
+.navbar-brand {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+#logo {
+  width: 32px;
+  height: 32px;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+}
+
+article h1 {
+  letter-spacing: -0.035em;
+  font-weight: 700;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.feature-card {
+  padding: 1.25rem;
+  border: 1px solid var(--bs-border-color);
+  border-top: 3px solid var(--chromatray-aqua);
+  border-radius: 14px;
+  background: var(--bs-tertiary-bg);
+}
+
+.feature-card h2 {
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+
+.feature-card p {
+  margin-bottom: 0;
+}

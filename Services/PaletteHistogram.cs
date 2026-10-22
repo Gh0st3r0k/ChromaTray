@@ -3,6 +3,13 @@ using ChromaTray.Models;
 
 namespace ChromaTray.Services;
 
+/// <summary>
+/// A completed palette scan, including counts before the result limit.
+/// </summary>
+/// <param name="Palette">Most frequent entries, sorted by frequency and then RGB.</param>
+/// <param name="TotalPixels">Total scanned pixels.</param>
+/// <param name="UniqueColorsFound">Number of exact colors or shade groups before limiting the result list.</param>
+/// <param name="ElapsedMilliseconds">Analysis duration in milliseconds.</param>
 public record PaletteAnalysisResult(
     List<ColorDetails> Palette,
     int TotalPixels,
@@ -11,7 +18,7 @@ public record PaletteAnalysisResult(
 
 // Логика не зависит от Bitmap/WinForms и проверяется также на Linux.
 /// <summary>
-/// Считает частоты RGB. При группировке представляет каждую группу реальным цветом из изображения.
+/// Counts RGB frequencies and represents each optional shade group with an actual color from the image.
 /// </summary>
 internal sealed class PaletteHistogram(bool groupSimilar)
 {

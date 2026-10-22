@@ -1,0 +1,11 @@
+- name: Overview
+  href: index.md
+- name: Get started
+  href: getting-started.md
+- name: Development
+  href: development.md
+- name: API reference
+  href: api/
+  homepage: api/index.md
+- name: GitHub
+  href: https://github.com/Gh0st3r0k/ChromaTray

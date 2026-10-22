@@ -3,7 +3,7 @@ using System.Drawing.Drawing2D;
 namespace ChromaTray.Forms.Controls;
 
 /// <summary>
-/// Скруглённая панель: собственная заливка внутри, фон родителя снаружи.
+/// A rounded panel that paints its own fill inside the curve and preserves the parent background outside it.
 /// </summary>
 internal class SurfacePanel : Panel
 {

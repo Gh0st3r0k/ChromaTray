@@ -9,8 +9,8 @@ using ChromaTray.Services;
 namespace ChromaTray.Forms;
 
 /// <summary>
-/// Главное окно связывает настройки, трей и действия пользователя.
-/// Создание интерфейса находится в .Layout.cs, захват — в .Capture.cs, палитра и буфер — в .Palette.cs.
+/// Coordinates window lifetime, tray commands, settings, and capture actions.
+/// Layout, capture, and palette interactions are implemented in the corresponding partial class files.
 /// </summary>
 public partial class MainDashboardForm : Form
 {
@@ -24,6 +24,9 @@ public partial class MainDashboardForm : Form
     private readonly Icon _appIcon;
     private readonly ToolTip _toolTips = new();
 
+    /// <summary>
+    /// Loads user preferences and creates the dashboard and system-tray commands.
+    /// </summary>
     public MainDashboardForm() : this(AppSettings.Load())
     {
     }

@@ -1,0 +1,47 @@
+{
+  "metadata": [
+    {
+      "src": [
+        {
+          "files": ["ChromaTray.csproj"],
+          "src": "../.."
+        }
+      ],
+      "dest": "api",
+      "noRestore": true,
+      "properties": {
+        "Configuration": "Release",
+        "TargetFramework": "net8.0-windows",
+        "EnableWindowsTargeting": "true"
+      }
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": ["*.md", "toc.yml", "api/*.yml", "api/index.md"]
+      }
+    ],
+    "resource": [
+      {
+        "files": ["assets/logo.svg"],
+        "src": ".."
+      }
+    ],
+    "dest": "../../artifacts/docs-site",
+    "template": ["default", "modern", "template"],
+    "globalMetadata": {
+      "_appName": "ChromaTray",
+      "_appTitle": "ChromaTray Documentation",
+      "_appLogoPath": "assets/logo.svg",
+      "_appFaviconPath": "assets/logo.svg",
+      "_appFooter": "ChromaTray · MIT License",
+      "_enableSearch": true,
+      "_lang": "en",
+      "_gitContribute": {
+        "repo": "https://github.com/Gh0st3r0k/ChromaTray",
+        "branch": "main"
+      }
+    }
+  }
+}

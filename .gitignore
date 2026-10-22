@@ -6,3 +6,6 @@ artifacts/
 *.user
 *.suo
 TestResults/
+docs/site/api/*.yml
+docs/site/api/.manifest
+docs/site/obj/

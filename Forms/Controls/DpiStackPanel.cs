@@ -3,7 +3,7 @@ namespace ChromaTray.Forms.Controls;
 // Исходные размеры не изменяются при масштабировании. Это предотвращает
 // повторное увеличение размеров контролов, созданных после смены DPI.
 /// <summary>
-/// Вертикальный макет, который хранит исходные размеры и заново применяет масштаб окна.
+/// A vertical layout that retains design dimensions and reapplies the current window DPI.
 /// </summary>
 internal sealed class DpiStackPanel(int[] rowHeights) : TableLayoutPanel
 {

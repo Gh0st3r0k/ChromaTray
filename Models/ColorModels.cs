@@ -2,25 +2,60 @@ using System.Drawing;
 
 namespace ChromaTray.Models;
 
+/// <summary>
+/// The portion of the frozen desktop selected by a capture operation.
+/// </summary>
 public enum CaptureMode
 {
+    /// <summary>
+    /// Select one original screen pixel.
+    /// </summary>
     Point,
+    /// <summary>
+    /// Select a rectangular region for palette analysis.
+    /// </summary>
     Region
 }
 
+/// <summary>
+/// Supported text representations of an RGB color.
+/// </summary>
 public enum ColorFormat
 {
+    /// <summary>
+    /// Hexadecimal RGB, for example #98DED9.
+    /// </summary>
     Hex,
+    /// <summary>
+    /// RGB channels in the range 0–255.
+    /// </summary>
     Rgb,
+    /// <summary>
+    /// Hue, saturation, and lightness.
+    /// </summary>
     Hsl,
+    /// <summary>
+    /// Hue, saturation, and value.
+    /// </summary>
     Hsv,
+    /// <summary>
+    /// Cyan, magenta, yellow, and black percentages without print-profile correction.
+    /// </summary>
     Cmyk
 }
 
 /// <summary>
-/// Исходный RGB, готовые строки форматов и статистика одного цвета.
-/// Пересчёт форматов не меняет RawColor; CMYK здесь математический, без печатного ICC-профиля.
+/// An original RGB value, its formatted representations, and palette statistics.
+/// Formatting preserves RawColor. CMYK is a mathematical conversion without a print ICC profile.
 /// </summary>
+/// <param name="RawColor">The original pixel color, or an original representative color when grouping shades.</param>
+/// <param name="Hex">The hexadecimal RGB representation.</param>
+/// <param name="Rgb">The RGB function representation.</param>
+/// <param name="Hsl">The HSL function representation.</param>
+/// <param name="Hsv">The HSV function representation.</param>
+/// <param name="Cmyk">The mathematical CMYK representation.</param>
+/// <param name="PixelCount">Number of pixels represented by this entry, including the full bucket when grouped.</param>
+/// <param name="Percentage">Share of all captured pixels, before any result-list limit.</param>
 public record ColorDetails(
     Color RawColor,
     string Hex,
@@ -31,6 +66,11 @@ public record ColorDetails(
     int PixelCount = 1,
     double Percentage = 100.0)
 {
+    /// <summary>
+    /// Returns the stored representation for the requested color format.
+    /// </summary>
+    /// <param name="format">The requested representation.</param>
+    /// <returns>The formatted value; HEX is used for an unknown enum value.</returns>
     public string GetValue(ColorFormat format) => format switch
     {
         ColorFormat.Hex => Hex,
@@ -41,6 +81,11 @@ public record ColorDetails(
         _ => Hex
     };
 
+    /// <summary>
+    /// Returns the short label displayed for a color format.
+    /// </summary>
+    /// <param name="format">The color format.</param>
+    /// <returns>A label such as HEX, RGB, or HSL.</returns>
     public static string GetFormatLabel(ColorFormat format) => format switch
     {
         ColorFormat.Hex => "HEX",
@@ -52,6 +97,14 @@ public record ColorDetails(
     };
 
     // Форматируем с инвариантной культурой: десятичная запятая локали не должна испортить экспорт.
+    /// <summary>
+    /// Builds all supported representations without changing the original color.
+    /// </summary>
+    /// <param name="color">The source RGB color.</param>
+    /// <param name="count">Pixel count associated with the entry.</param>
+    /// <param name="percentage">Share of the captured region, in percent.</param>
+    /// <returns>The original color, formatted values, and supplied statistics.</returns>
+    /// <remarks>HSL/HSV hue uses degrees; saturation, lightness, value, and CMYK use percentages. Formatting is culture-independent.</remarks>
     public static ColorDetails FromColor(Color color, int count = 1, double percentage = 100.0)
     {
         string hex = $"#{color.R:X2}{color.G:X2}{color.B:X2}";

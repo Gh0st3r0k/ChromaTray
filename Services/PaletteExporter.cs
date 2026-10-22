@@ -5,19 +5,40 @@ using ChromaTray.Models;
 
 namespace ChromaTray.Services;
 
+/// <summary>
+/// Controls how an entire palette is converted into clipboard text.
+/// </summary>
 public enum PaletteExportMode
 {
+    /// <summary>
+    /// Write all enabled representations and the pixel share for each entry.
+    /// </summary>
     AllActiveFormats = 0,
+    /// <summary>
+    /// Write one primary-format value per line.
+    /// </summary>
     PrimaryFormatOnly = 1,
+    /// <summary>
+    /// Write CSS custom properties; HSV and CMYK fall back to HEX.
+    /// </summary>
     CssVariables = 2,
+    /// <summary>
+    /// Write a JSON array with enabled representations and sharePercent.
+    /// </summary>
     JsonArray = 3
 }
 
 /// <summary>
-/// Формирует текст для буфера обмена без обращения к интерфейсу или файловой системе.
+/// Formats palette text without accessing the clipboard, user interface, or file system.
 /// </summary>
 public static class PaletteExporter
 {
+    /// <summary>
+    /// Formats one color as a labeled line for each enabled format.
+    /// </summary>
+    /// <param name="color">The selected color.</param>
+    /// <param name="activeFormats">A nonempty ordered list of representations.</param>
+    /// <returns>A multiline summary without a trailing newline.</returns>
     public static string FormatSingleColorSummary(ColorDetails color, IReadOnlyList<ColorFormat> activeFormats)
     {
         if (activeFormats == null || activeFormats.Count == 0)
@@ -34,6 +55,14 @@ public static class PaletteExporter
         return output.ToString().TrimEnd();
     }
 
+    /// <summary>
+    /// Formats an entire palette using the requested export mode.
+    /// </summary>
+    /// <param name="palette">The ordered palette. Null or an empty list produces an empty string.</param>
+    /// <param name="activeFormats">Enabled formats. At least one is required for a nonempty palette.</param>
+    /// <param name="mode">The text, CSS, or JSON output mode.</param>
+    /// <returns>Export text without a trailing newline.</returns>
+    /// <remarks>Numeric percentages are culture-independent. The first active format is the primary format.</remarks>
     public static string FormatEntirePalette(
         IReadOnlyList<ColorDetails> palette,
         IReadOnlyList<ColorFormat> activeFormats,

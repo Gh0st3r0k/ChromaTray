@@ -5,7 +5,8 @@ namespace ChromaTray.Services;
 // DWM — компоновщик рабочего стола Windows. Одна задержка не гарантирует,
 // что в снимок не попадёт исчезающее окно или закрывающееся меню.
 /// <summary>
-/// На время подготовки снимка скрывает главное окно без анимации. Dispose восстанавливает флаги окна, но не показывает его.
+/// Hides the dashboard without an animation while preparing a capture.
+/// Disposal restores window flags but does not show the window.
 /// </summary>
 internal sealed class DesktopCaptureScope : IDisposable
 {

@@ -6,10 +6,19 @@ using System.Runtime.InteropServices;
 namespace ChromaTray.Services;
 
 /// <summary>
-/// Адаптер Bitmap: читает пиксели построчно и передаёт их независимому от Windows счётчику PaletteHistogram.
+/// Reads bitmap rows and forwards their pixels to the platform-independent palette histogram.
 /// </summary>
 public static class PaletteAnalyzer
 {
+    /// <summary>
+    /// Scans a bitmap and returns its most frequent RGB colors.
+    /// </summary>
+    /// <param name="bitmap">The source bitmap. The caller retains ownership.</param>
+    /// <param name="groupSimilar">Whether to combine shades into step-eight RGB buckets represented by original colors.</param>
+    /// <param name="maxResults">Maximum returned entries. Must be positive; defaults to 500.</param>
+    /// <param name="cancellationToken">Cancels processing between bitmap rows.</param>
+    /// <returns>Pixel totals, the pre-limit number of colors or groups, and a frequency-sorted palette.</returns>
+    /// <remarks>This method is synchronous. The dashboard runs it on a background task. Percentages use the full region even when only the top entries are returned.</remarks>
     public static PaletteAnalysisResult AnalyzeBitmap(Bitmap bitmap, bool groupSimilar, int maxResults = 500,
         CancellationToken cancellationToken = default)
     {

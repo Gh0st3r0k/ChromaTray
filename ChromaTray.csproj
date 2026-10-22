@@ -13,6 +13,10 @@
     <Description>Screen color picker and region palette inspector for Windows.</Description>
     <Authors>Kostiantyn Zaitsev</Authors>
     <RepositoryUrl>https://github.com/Gh0st3r0k/ChromaTray</RepositoryUrl>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- WinForms overrides and generated record members do not all need separate API prose.
+         Invalid XML documentation still produces compiler diagnostics. -->
+    <NoWarn>$(NoWarn);1591</NoWarn>
     <!-- Single-file publishing adds SDK packages and a RID. Keep its lock separate
          so publishing cannot invalidate the ordinary build/test dependency lock. -->
     <NuGetLockFilePath Condition="'$(PublishSingleFile)' == 'true'">$(MSBuildProjectDirectory)/obj/publish-$(RuntimeIdentifier)-$(SelfContained).packages.lock.json</NuGetLockFilePath>

@@ -3,7 +3,7 @@ using System.Drawing;
 namespace ChromaTray.Services;
 
 /// <summary>
-/// Двигает выбор на один физический пиксель, не позволяя попасть в промежуток между мониторами.
+/// Moves the selection by one physical pixel while preventing movement into gaps between monitors.
 /// </summary>
 internal static class PixelNavigator
 {

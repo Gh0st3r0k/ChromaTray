@@ -4,7 +4,7 @@ using System.Drawing.Drawing2D;
 namespace ChromaTray.Forms.Controls;
 
 /// <summary>
-/// Образец выбранного цвета с HEX и долей пикселей; текст подстраивается под яркость фона.
+/// Displays the selected color, HEX value, and pixel share with text contrast chosen from background brightness.
 /// </summary>
 internal sealed class ColorPreview : Control
 {

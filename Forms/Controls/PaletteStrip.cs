@@ -3,7 +3,7 @@ using ChromaTray.Models;
 namespace ChromaTray.Forms.Controls;
 
 /// <summary>
-/// Полоса частот: ширина каждого сегмента пропорциональна числу пикселей цвета.
+/// Displays a frequency strip whose segment widths are proportional to pixel counts.
 /// </summary>
 internal sealed class PaletteStrip : Control
 {

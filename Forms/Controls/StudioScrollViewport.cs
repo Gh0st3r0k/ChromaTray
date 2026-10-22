@@ -1,7 +1,7 @@
 namespace ChromaTray.Forms.Controls;
 
 /// <summary>
-/// Обрезает длинное содержимое инспектора и сдвигает его собственной полосой прокрутки.
+/// Clips inspector content and moves it using a themed scrollbar.
 /// </summary>
 internal sealed class StudioScrollViewport : Panel
 {

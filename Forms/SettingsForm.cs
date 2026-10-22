@@ -7,7 +7,7 @@ using ChromaTray.Services;
 namespace ChromaTray.Forms;
 
 /// <summary>
-/// Редактирует копии настроек. Живые настройки меняются только после успешного сохранения.
+/// Edits copies of user preferences and updates the active settings only after a successful save.
 /// </summary>
 public partial class SettingsForm : Form
 {
@@ -17,6 +17,10 @@ public partial class SettingsForm : Form
 
     private readonly Dictionary<ColorFormat, CheckBox> _formatCheckboxes = new();
 
+    /// <summary>
+    /// Creates a settings editor with isolated shortcut copies.
+    /// </summary>
+    /// <param name="currentSettings">Active settings to update only after a successful Save action.</param>
     public SettingsForm(AppSettings currentSettings)
     {
         _settings = currentSettings;

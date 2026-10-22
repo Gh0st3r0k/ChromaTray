@@ -5,8 +5,8 @@ using ChromaTray.Services;
 namespace ChromaTray.Forms;
 
 /// <summary>
-/// Полноэкранный выбор по замороженному снимку рабочего стола.
-/// Выбранные значения читаются из снимка, а не из нарисованных поверх него подсказок.
+/// Selects a point or region from a frozen desktop snapshot.
+/// Results are read from the original snapshot, independently of the overlay graphics.
 /// </summary>
 public partial class ScreenOverlayForm : Form
 {
@@ -24,11 +24,18 @@ public partial class ScreenOverlayForm : Form
     private Point _dragStart;
     private bool _isDragging;
 
+    /// <summary>
+    /// The original RGB of a confirmed point, or null when no point was confirmed.
+    /// </summary>
     public Color? PickedPointColor
     {
         get; private set;
     }
 
+    /// <summary>
+    /// The cropped original region, or null when no region was confirmed.
+    /// </summary>
+    /// <remarks>The overlay owns this bitmap. Clone it before disposing the overlay if the result must remain available.</remarks>
     public Bitmap? PickedRegionBitmap
     {
         get; private set;
@@ -36,6 +43,10 @@ public partial class ScreenOverlayForm : Form
 
     internal Point SelectedScreenPoint => new(_cursorPosition.X + _virtualBounds.X, _cursorPosition.Y + _virtualBounds.Y);
 
+    /// <summary>
+    /// Captures the virtual desktop and creates a point or region selection overlay.
+    /// </summary>
+    /// <param name="mode">The selection mode.</param>
     public ScreenOverlayForm(CaptureMode mode) : this(mode, CaptureDesktop())
     {
     }

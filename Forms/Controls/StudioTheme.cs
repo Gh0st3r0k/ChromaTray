@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace ChromaTray.Forms.Controls;
 
 /// <summary>
-/// Общие цвета, шрифты и геометрия интерфейса. Размеры макетов задаются для 96 DPI.
+/// Shared colors, fonts, and geometry helpers. Layout dimensions use a 96-DPI baseline.
 /// </summary>
 internal static class StudioTheme
 {

@@ -3,22 +3,49 @@ using ChromaTray.Models;
 
 namespace ChromaTray.Services;
 
+/// <summary>
+/// The outcome of a settings check.
+/// </summary>
+/// <param name="IsValid">Whether the input passed validation.</param>
+/// <param name="ErrorCode">A stable diagnostic identifier, or OK on success.</param>
+/// <param name="Message">A user-facing explanation, or an empty string on success.</param>
 public record ValidationResult(bool IsValid, string ErrorCode, string Message)
 {
+    /// <summary>
+    /// Creates a successful validation result.
+    /// </summary>
+    /// <returns>A valid result with code OK.</returns>
     public static ValidationResult Success() => new(true, "OK", string.Empty);
+    /// <summary>
+    /// Creates a failed validation result.
+    /// </summary>
+    /// <param name="code">The diagnostic code.</param>
+    /// <param name="message">The explanation displayed to the user.</param>
+    /// <returns>An invalid result with the supplied code and message.</returns>
     public static ValidationResult Fail(string code, string message) => new(false, code, message);
 }
 
 /// <summary>
-/// Проверяет допустимость хоткеев и выбранных форматов; не сохраняет и не изменяет настройки.
+/// Validates hotkeys and active color formats without changing or saving settings.
 /// </summary>
 public static class SettingsValidator
 {
+    /// <summary>
+    /// Checks whether a key is only a modifier rather than a primary shortcut key.
+    /// </summary>
+    /// <param name="keyCode">A Windows Forms key code.</param>
+    /// <returns>True for Ctrl, Shift, Alt, or Windows-key variants.</returns>
     public static bool IsModifierOnlyKey(Keys keyCode) =>
         keyCode is Keys.ControlKey or Keys.ShiftKey or Keys.Menu or Keys.LWin or Keys.RWin
             or Keys.LControlKey or Keys.RControlKey or Keys.LShiftKey or Keys.RShiftKey
             or Keys.LMenu or Keys.RMenu;
 
+    /// <summary>
+    /// Checks a shortcut for a valid primary key and required modifiers.
+    /// </summary>
+    /// <param name="binding">The binding to inspect.</param>
+    /// <returns>The first validation failure, or success.</returns>
+    /// <remarks>F12 is reserved by Windows. F1–F11 may be used without modifiers; other primary keys require Ctrl, Shift, or Alt.</remarks>
     public static ValidationResult ValidateHotkeyBinding(HotkeyBinding binding)
     {
         if (IsModifierOnlyKey(binding.Key) || binding.Key == Keys.None ||
@@ -44,6 +71,14 @@ public static class SettingsValidator
         return ValidationResult.Success();
     }
 
+    /// <summary>
+    /// Checks both shortcuts and the set of enabled color formats.
+    /// </summary>
+    /// <param name="pointHotkey">The point-picker shortcut.</param>
+    /// <param name="regionHotkey">The region-picker shortcut.</param>
+    /// <param name="activeFormats">The selected format collection.</param>
+    /// <returns>The first validation failure, or success.</returns>
+    /// <remarks>Point and region shortcuts must differ, and at least one known color format must remain enabled.</remarks>
     public static ValidationResult ValidateSettingsState(
         HotkeyBinding pointHotkey,
         HotkeyBinding regionHotkey,
