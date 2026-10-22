@@ -24,11 +24,12 @@ public class AppSettingsTests : IDisposable
             PointHotkey = new HotkeyBinding(ctrl: false, shift: true, alt: true, key: Keys.C),
             RegionHotkey = new HotkeyBinding(ctrl: true, shift: false, alt: true, key: Keys.R),
             ActiveFormats = [ColorFormat.Rgb, ColorFormat.Cmyk],
-            GroupSimilarColors = false
+            GroupSimilarColors = true
         };
 
         original.Save(filePath);
         var loaded = AppSettings.Load(filePath);
+        Assert.True(loaded.GroupSimilarColors);
 
         DiagAssert.Equal("Shift+Alt+C", loaded.PointHotkey.ToString(),
             "CT-CFG-001A", "Models/AppSettings", "Persist PointHotkey to JSON", filePath,
@@ -79,6 +80,12 @@ public class AppSettingsTests : IDisposable
 
     public void Dispose()
     {
-        try { Directory.Delete(_tempDir, recursive: true); } catch { }
+        try
+        {
+            Directory.Delete(_tempDir, recursive: true);
+        }
+        catch
+        {
+        }
     }
 }

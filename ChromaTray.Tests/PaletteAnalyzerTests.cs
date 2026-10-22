@@ -104,7 +104,9 @@ public class PaletteAnalyzerTests
     {
         using var bmp = new Bitmap(30, 1, PixelFormat.Format32bppArgb);
         for (int x = 0; x < 30; x++)
+        {
             bmp.SetPixel(x, 0, Color.FromArgb(x * 8, 0, 0));
+        }
 
         var result = PaletteAnalyzer.AnalyzeBitmap(bmp, groupSimilar: false, maxResults: 10);
 

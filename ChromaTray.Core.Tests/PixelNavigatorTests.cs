@@ -49,7 +49,10 @@ public class PixelNavigatorTests
     {
         var position = new Point(5, 5);
         Rectangle[] screens = [new(0, 0, 10, 10)];
-        for (int i = 0; i < 100; i++) position = PixelNavigator.Move(position, 1, 0, screens);
+        for (int i = 0; i < 100; i++)
+        {
+            position = PixelNavigator.Move(position, 1, 0, screens);
+        }
         Assert.Equal(new Point(9, 5), position);
         Assert.Equal(new Point(8, 5), PixelNavigator.Move(position, -1, 0, screens));
     }

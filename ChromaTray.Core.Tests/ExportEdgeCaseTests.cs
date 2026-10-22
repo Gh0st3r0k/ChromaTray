@@ -28,13 +28,19 @@ public class ExportEdgeCaseTests
             Assert.Equal(37.5, first.GetProperty("sharePercent").GetDouble());
             Assert.False(first.TryGetProperty("rgb", out _));
         }
-        finally { CultureInfo.CurrentCulture = previous; }
+        finally
+        {
+            CultureInfo.CurrentCulture = previous;
+        }
     }
 
     [Fact]
     public void JsonExport_EscapesStringValues()
     {
-        var color = ColorDetails.FromColor(Color.Red) with { Hex = "\"quoted\"\nvalue" };
+        var color = ColorDetails.FromColor(Color.Red) with
+        {
+            Hex = "\"quoted\"\nvalue"
+        };
         using var parsed = JsonDocument.Parse(PaletteExporter.FormatEntirePalette([color], [ColorFormat.Hex], PaletteExportMode.JsonArray));
         Assert.Equal(color.Hex, parsed.RootElement[0].GetProperty("hex").GetString());
     }

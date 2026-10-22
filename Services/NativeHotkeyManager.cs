@@ -3,28 +3,41 @@ using ChromaTray.Models;
 
 namespace ChromaTray.Services;
 
+/// <summary>
+/// Регистрирует глобальные хоткеи Windows и переводит модификаторы в битовую маску Win32.
+/// </summary>
 public static class NativeHotkeyManager
 {
     [DllImport("user32.dll", SetLastError = true)]
-    private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
+    private static extern bool RegisterHotKey(IntPtr windowHandle, int id, uint modifiers, uint virtualKey);
 
     [DllImport("user32.dll")]
-    private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+    private static extern bool UnregisterHotKey(IntPtr windowHandle, int id);
 
-    public const int HOTKEY_ID_POINT = 9001;
-    public const int HOTKEY_ID_REGION = 9002;
-    public const int WM_HOTKEY = 0x0312;
+    public const int PointHotkeyId = 9001;
+    public const int RegionHotkeyId = 9002;
+    public const int HotkeyMessage = 0x0312;
 
-    private const uint MOD_ALT = 0x0001;
-    private const uint MOD_CONTROL = 0x0002;
-    private const uint MOD_SHIFT = 0x0004;
+    private const uint AltModifier = 0x0001;
+    private const uint ControlModifier = 0x0002;
+    private const uint ShiftModifier = 0x0004;
+    private const uint NoRepeatModifier = 0x4000;
 
     public static uint BuildWin32Modifiers(HotkeyBinding binding)
     {
         uint modifiers = 0;
-        if (binding.Ctrl) modifiers |= MOD_CONTROL;
-        if (binding.Shift) modifiers |= MOD_SHIFT;
-        if (binding.Alt) modifiers |= MOD_ALT;
+        if (binding.Ctrl)
+        {
+            modifiers |= ControlModifier;
+        }
+        if (binding.Shift)
+        {
+            modifiers |= ShiftModifier;
+        }
+        if (binding.Alt)
+        {
+            modifiers |= AltModifier;
+        }
         return modifiers;
     }
 
@@ -32,12 +45,13 @@ public static class NativeHotkeyManager
     {
         UnregisterHotKey(handle, id);
         uint modifiers = BuildWin32Modifiers(binding);
-        return RegisterHotKey(handle, id, modifiers | 0x4000 /* MOD_NOREPEAT */, (uint)binding.Key);
+        // Удерживание клавиши должно запускать захват один раз, а не на каждое автоповторение.
+        return RegisterHotKey(handle, id, modifiers | NoRepeatModifier, (uint)binding.Key);
     }
 
     public static void UnregisterAll(IntPtr handle)
     {
-        UnregisterHotKey(handle, HOTKEY_ID_POINT);
-        UnregisterHotKey(handle, HOTKEY_ID_REGION);
+        UnregisterHotKey(handle, PointHotkeyId);
+        UnregisterHotKey(handle, RegionHotkeyId);
     }
 }

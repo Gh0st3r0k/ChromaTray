@@ -24,12 +24,32 @@ public class AppearanceRegressionTests
             // The custom fill differs from both Canvas and Surface. This also
             // detects a fix that merely paints a hard-coded corner color.
             var background = Color.FromArgb(47, 69, 93);
-            using var host = new Form { ClientSize = new Size(600, 360), BackColor = StudioTheme.Canvas,
-                AutoScaleDimensions = new SizeF(96, 96), AutoScaleMode = AutoScaleMode.Dpi };
-            var card = new SurfacePanel { Dock = DockStyle.Fill, FillColor = background };
-            var container = new Panel { Dock = DockStyle.Fill, BackColor = Color.Transparent };
-            var button = new StudioButton { Text = "Rounded button", Bounds = new Rectangle(40, 40, 240, 56) };
-            var select = new StudioSelect { Bounds = new Rectangle(40, 120, 240, 48) };
+            using var host = new Form
+            {
+                ClientSize = new Size(600, 360),
+                BackColor = StudioTheme.Canvas,
+                AutoScaleDimensions = new SizeF(96, 96),
+                AutoScaleMode = AutoScaleMode.Dpi
+            };
+            var card = new SurfacePanel
+            {
+                Dock = DockStyle.Fill,
+                FillColor = background
+            };
+            var container = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.Transparent
+            };
+            var button = new StudioButton
+            {
+                Text = "Rounded button",
+                Bounds = new Rectangle(40, 40, 240, 56)
+            };
+            var select = new StudioSelect
+            {
+                Bounds = new Rectangle(40, 120, 240, 48)
+            };
             select.SetItems("All active formats", "JSON palette array");
             container.Controls.Add(button);
             container.Controls.Add(select);
@@ -43,9 +63,13 @@ public class AppearanceRegressionTests
                 using var rendered = new Bitmap(control.Width, control.Height);
                 control.DrawToBitmap(rendered, control.ClientRectangle);
                 foreach (int x in new[] { 0, 1, control.Width - 2, control.Width - 1 })
+                {
                     foreach (int y in new[] { 0, 1, control.Height - 2, control.Height - 1 })
+                    {
                         Assert.True(background.ToArgb() == rendered.GetPixel(x, y).ToArgb(),
-                            $"{control.GetType().Name} has an incorrect corner at {x},{y}, {state}, DPI {dpi}: {rendered.GetPixel(x, y)}.");
+                                                $"{control.GetType().Name} has an incorrect corner at {x},{y}, {state}, DPI {dpi}: {rendered.GetPixel(x, y)}.");
+                    }
+                }
             }
             void MouseEvent(string method, EventArgs args) => typeof(StudioButton)
                 .GetMethod(method, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
@@ -195,7 +219,10 @@ public class AppearanceRegressionTests
     {
         OverlayKeyboardTests.OnSta(() =>
         {
-            var live = new AppSettings { GroupSimilarColors = false };
+            var live = new AppSettings
+            {
+                GroupSimilarColors = false
+            };
             using var settings = new SettingsForm(live);
             settings.Show();
             var grouping = Assert.IsType<CheckBox>(Find(settings, "SettingsGroupSimilarToggle"));
@@ -220,18 +247,32 @@ public class AppearanceRegressionTests
                 Color.FromArgb(153, 206, 236), Color.FromArgb(238, 235, 220),
                 Color.FromArgb(132, 0, 0), Color.White];
             var source = new Bitmap(960, 640);
-            using (var graphics = Graphics.FromImage(source)) graphics.Clear(pixels[0]);
+            using (var graphics = Graphics.FromImage(source))
+                graphics.Clear(pixels[0]);
             for (int row = 0; row < 11; row++)
-                for (int col = 0; col < 11; col++) source.SetPixel(295 + col, 275 + row, pixels[col % pixels.Length]);
+            {
+                for (int col = 0; col < 11; col++)
+                {
+                    source.SetPixel(295 + col, 275 + row, pixels[col % pixels.Length]);
+                }
+            }
             using var overlay = new ScreenOverlayForm(CaptureMode.Point, source, new Rectangle(0, 0, 960, 640),
-                [new(0, 0, 960, 640)], _ => { }, new(300, 280));
+                [new(0, 0, 960, 640)], _ =>
+                {
+                }, new(300, 280));
             _ = overlay.Handle;
             using var rendered = new Bitmap(960, 640);
             overlay.DrawToBitmap(rendered, new Rectangle(0, 0, 960, 640));
             int S(int value) => (int)Math.Round(value * overlay.DeviceDpi / 96f);
             int x = 300 + S(30), y = 280 + S(30);
-            if (x + S(346) + S(12) > 960) x = 300 - S(346) - S(30);
-            if (y + S(268) + S(12) > 640) y = 280 - S(268) - S(30);
+            if (x + S(346) + S(12) > 960)
+            {
+                x = 300 - S(346) - S(30);
+            }
+            if (y + S(268) + S(12) > 640)
+            {
+                y = 280 - S(268) - S(30);
+            }
             x = Math.Clamp(x, S(12), Math.Max(S(12), 960 - S(346) - S(12)));
             y = Math.Clamp(y, S(12), Math.Max(S(12), 640 - S(268) - S(12)));
             for (int col = 0; col < 11; col++)
@@ -250,9 +291,12 @@ public class AppearanceRegressionTests
         {
             var source = Color.FromArgb(199, 255, 216);
             var bitmap = new Bitmap(960, 640);
-            using (var g = Graphics.FromImage(bitmap)) g.Clear(source);
+            using (var g = Graphics.FromImage(bitmap))
+                g.Clear(source);
             using var overlay = new ScreenOverlayForm(CaptureMode.Point, bitmap, new Rectangle(0, 0, 960, 640),
-                [new(0, 0, 960, 640)], _ => { }, new(300, 280));
+                [new(0, 0, 960, 640)], _ =>
+                {
+                }, new(300, 280));
             _ = overlay.Handle;
             Assert.NotEqual(Cursors.Cross.Handle, overlay.Cursor.Handle);
             Assert.Equal(new Point(16, 16), overlay.Cursor.HotSpot);
@@ -265,11 +309,17 @@ public class AppearanceRegressionTests
     }
 
     private static Control Find(Control root, string name) => Assert.Single(root.Controls.Find(name, true));
+
     private static void SwitchWorkspace(Form form, string buttonName)
     {
         var button = Assert.IsAssignableFrom<Button>(Find(form, buttonName));
-        if (button.Visible) { button.PerformClick(); form.PerformLayout(); }
+        if (button.Visible)
+        {
+            button.PerformClick();
+            form.PerformLayout();
+        }
     }
+
     private static void AssertContainedByAncestors(Control control, Control root)
     {
         var bounds = control.RectangleToScreen(control.ClientRectangle);
@@ -277,15 +327,28 @@ public class AppearanceRegressionTests
         {
             var parentBounds = parent.RectangleToScreen(parent.ClientRectangle);
             Assert.True(parentBounds.Contains(bounds), $"{control.Name} {bounds} is clipped by {parent.Name} {parentBounds} at DPI {root.DeviceDpi}.");
-            if (parent == root) break;
+            if (parent == root)
+            {
+                break;
+            }
         }
     }
+
     private static void ApplyDpiChange(Form form, int dpi)
     {
-        if (dpi == form.DeviceDpi) return;
+        if (dpi == form.DeviceDpi)
+        {
+            return;
+        }
         // Exercise the same WM_DPICHANGED path used when a user moves between
         // differently scaled monitors. This does not emulate a physical display.
-        var bounds = new NativeRect { Left = form.Left, Top = form.Top, Right = form.Left + 1280, Bottom = form.Top + 900 };
+        var bounds = new NativeRect
+        {
+            Left = form.Left,
+            Top = form.Top,
+            Right = form.Left + 1280,
+            Bottom = form.Top + 900
+        };
         IntPtr pointer = Marshal.AllocHGlobal(Marshal.SizeOf<NativeRect>());
         try
         {
@@ -293,17 +356,31 @@ public class AppearanceRegressionTests
             SendMessage(form.Handle, 0x02E0, (IntPtr)((dpi << 16) | dpi), pointer);
             Assert.Equal(dpi, form.DeviceDpi);
         }
-        finally { Marshal.FreeHGlobal(pointer); }
+        finally
+        {
+            Marshal.FreeHGlobal(pointer);
+        }
     }
+
     private static void SavePreview(Control form, string filename)
     {
         string? directory = Environment.GetEnvironmentVariable("CHROMATRAY_UI_PREVIEW_DIR");
-        if (string.IsNullOrEmpty(directory)) return;
+        if (string.IsNullOrEmpty(directory))
+        {
+            return;
+        }
         Directory.CreateDirectory(directory);
         using var image = new Bitmap(form.Width, form.Height);
         form.DrawToBitmap(image, new Rectangle(Point.Empty, image.Size));
         image.Save(Path.Combine(directory, filename), ImageFormat.Png);
     }
-    [StructLayout(LayoutKind.Sequential)] private struct NativeRect { public int Left, Top, Right, Bottom; }
-    [DllImport("user32.dll")] private static extern IntPtr SendMessage(IntPtr window, uint message, IntPtr wParam, IntPtr lParam);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeRect
+    {
+        public int Left, Top, Right, Bottom;
+    }
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr SendMessage(IntPtr window, uint message, IntPtr wParam, IntPtr lParam);
 }

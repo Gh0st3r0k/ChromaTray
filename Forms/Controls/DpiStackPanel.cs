@@ -1,53 +1,78 @@
 namespace ChromaTray.Forms.Controls;
 
-// Reapply design metrics after WinForms has scaled the children. Controls added
-// before/after handle creation must use the same DPI baseline.
+// Исходные размеры не изменяются при масштабировании. Это предотвращает
+// повторное увеличение размеров контролов, созданных после смены DPI.
+/// <summary>
+/// Вертикальный макет, который хранит исходные размеры и заново применяет масштаб окна.
+/// </summary>
 internal sealed class DpiStackPanel(int[] rowHeights) : TableLayoutPanel
 {
     private readonly Dictionary<Control, Padding> _margins = new();
     private Padding _logicalPadding;
-    private bool _updating;
+    private bool _isUpdatingLayout;
 
     public Padding LogicalPadding
     {
         get => _logicalPadding;
-        set { _logicalPadding = value; PerformLayout(); }
+        set
+        {
+            _logicalPadding = value;
+            PerformLayout();
+        }
     }
 
     public void SetRowHeight(int row, int logicalHeight)
     {
-        if (rowHeights[row] == logicalHeight) return;
+        if (rowHeights[row] == logicalHeight)
+        {
+            return;
+        }
         rowHeights[row] = logicalHeight;
         PerformLayout();
     }
 
     protected override void OnControlAdded(ControlEventArgs e)
     {
-        if (e.Control is not null) _margins[e.Control] = e.Control.Margin;
+        if (e.Control is not null)
+        {
+            _margins[e.Control] = e.Control.Margin;
+        }
         base.OnControlAdded(e);
     }
 
     protected override void OnControlRemoved(ControlEventArgs e)
     {
-        if (e.Control is not null) _margins.Remove(e.Control);
+        if (e.Control is not null)
+        {
+            _margins.Remove(e.Control);
+        }
         base.OnControlRemoved(e);
     }
 
     protected override void OnLayout(LayoutEventArgs levent)
     {
-        if (!_updating)
+        if (!_isUpdatingLayout)
         {
-            _updating = true;
+            _isUpdatingLayout = true;
             try
             {
-                int S(int value) => (int)Math.Round(value * StudioTheme.Dpi(this) / 96f);
-                Padding Scale(Padding p) => new(S(p.Left), S(p.Top), S(p.Right), S(p.Bottom));
-                Padding = Scale(_logicalPadding);
+                int Scale(int value) => (int)Math.Round(value * StudioTheme.Dpi(this) / 96f);
+                Padding ScalePadding(Padding padding) => new(Scale(padding.Left), Scale(padding.Top), Scale(padding.Right), Scale(padding.Bottom));
+                Padding = ScalePadding(_logicalPadding);
                 for (int row = 0; row < Math.Min(rowHeights.Length, RowStyles.Count); row++)
-                    if (rowHeights[row] >= 0) RowStyles[row].Height = S(rowHeights[row]);
-                foreach (var (control, margin) in _margins) control.Margin = Scale(margin);
+                {
+                    if (rowHeights[row] >= 0)
+                    {
+                        RowStyles[row].Height = Scale(rowHeights[row]);
+                    }
+                }
+                foreach (var (control, margin) in _margins)
+                    control.Margin = ScalePadding(margin);
             }
-            finally { _updating = false; }
+            finally
+            {
+                _isUpdatingLayout = false;
+            }
         }
         base.OnLayout(levent);
     }

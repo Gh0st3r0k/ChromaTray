@@ -15,8 +15,12 @@ public class BitmapEdgeCaseTests
         string[] hex = ["#161D6F", "#0B2F9F", "#98DED9", "#C7FFD8"];
         using var source = new Bitmap(8, 4, PixelFormat.Format32bppArgb);
         for (int y = 0; y < source.Height; y++)
+        {
             for (int x = 0; x < source.Width; x++)
+            {
                 source.SetPixel(x, y, ColorTranslator.FromHtml(hex[x / 2]));
+            }
+        }
         using var png = new MemoryStream();
         source.Save(png, ImageFormat.Png);
         png.Position = 0;
@@ -33,7 +37,8 @@ public class BitmapEdgeCaseTests
     public void TwentyFourBitBitmap_ConvertsWithoutChangingRgb()
     {
         using var bitmap = new Bitmap(3, 2, PixelFormat.Format24bppRgb);
-        using (var graphics = Graphics.FromImage(bitmap)) graphics.Clear(Color.FromArgb(12, 34, 56));
+        using (var graphics = Graphics.FromImage(bitmap))
+            graphics.Clear(Color.FromArgb(12, 34, 56));
         var result = PaletteAnalyzer.AnalyzeBitmap(bitmap, false);
         Assert.Single(result.Palette);
         Assert.Equal("#0C2238", result.Palette[0].Hex);
@@ -55,7 +60,10 @@ public class BitmapEdgeCaseTests
             Assert.All(result.Palette, color => Assert.Equal(50, color.Percentage));
             Assert.Equal(new[] { "#0000FF", "#FF0000" }, result.Palette.Select(color => color.Hex));
         }
-        finally { Marshal.FreeHGlobal(buffer); }
+        finally
+        {
+            Marshal.FreeHGlobal(buffer);
+        }
     }
 
     [Fact]

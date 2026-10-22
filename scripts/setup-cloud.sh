@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Run in the existing isolated checkout; do not create a worktree.
+# Устанавливает проверенный SDK в workspace и восстанавливает зафиксированные зависимости.
 project_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 export DOTNET_ROOT="${CHROMATRAY_DOTNET_ROOT:-/workspace/.dotnet}"
 export DOTNET_CLI_HOME="${DOTNET_CLI_HOME:-/workspace/.dotnet-home}"
@@ -12,6 +12,7 @@ export DOTNET_NOLOGO=1
 export PATH="$DOTNET_ROOT:$PATH"
 
 sdk_version=8.0.426
+# Официальный SHA-512 архива SDK: проверяется до распаковки.
 sdk_sha512=8141d01bdc53f604aed3bb661b604707a64209f8a947cd81bf95b4f518951593d77864069191f54ea5e84362a409da6b0f69074bf893b283d7e0cf93e2bf20a8
 if [[ ! -x "$DOTNET_ROOT/dotnet" ]] || ! "$DOTNET_ROOT/dotnet" --list-sdks | grep -q "^${sdk_version} "; then
     download_dir="$(mktemp -d)"

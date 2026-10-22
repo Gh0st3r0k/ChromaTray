@@ -17,6 +17,10 @@ public enum ColorFormat
     Cmyk
 }
 
+/// <summary>
+/// Исходный RGB, готовые строки форматов и статистика одного цвета.
+/// Пересчёт форматов не меняет RawColor; CMYK здесь математический, без печатного ICC-профиля.
+/// </summary>
 public record ColorDetails(
     Color RawColor,
     string Hex,
@@ -47,79 +51,99 @@ public record ColorDetails(
         _ => format.ToString().ToUpperInvariant()
     };
 
-    public static ColorDetails FromColor(Color c, int count = 1, double percentage = 100.0)
+    // Форматируем с инвариантной культурой: десятичная запятая локали не должна испортить экспорт.
+    public static ColorDetails FromColor(Color color, int count = 1, double percentage = 100.0)
     {
-        string hex = $"#{c.R:X2}{c.G:X2}{c.B:X2}";
-        string rgb = $"rgb({c.R}, {c.G}, {c.B})";
+        string hex = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+        string rgb = $"rgb({color.R}, {color.G}, {color.B})";
 
-        var (h, s, l) = RgbToHsl(c.R, c.G, c.B);
-        string hsl = FormattableString.Invariant($"hsl({h:F0}deg, {s:F0}%, {l:F0}%)");
+        var (hue, saturation, lightness) = RgbToHsl(color.R, color.G, color.B);
+        string hsl = FormattableString.Invariant($"hsl({hue:F0}deg, {saturation:F0}%, {lightness:F0}%)");
 
-        var (hv, sv, v) = RgbToHsv(c.R, c.G, c.B);
-        string hsv = FormattableString.Invariant($"hsv({hv:F0}deg, {sv:F0}%, {v:F0}%)");
+        var (hsvHue, hsvSaturation, value) = RgbToHsv(color.R, color.G, color.B);
+        string hsv = FormattableString.Invariant($"hsv({hsvHue:F0}deg, {hsvSaturation:F0}%, {value:F0}%)");
 
-        var (cy, mg, yl, k) = RgbToCmyk(c.R, c.G, c.B);
-        string cmyk = FormattableString.Invariant($"cmyk({cy:F0}%, {mg:F0}%, {yl:F0}%, {k:F0}%)");
+        var (cyan, magenta, yellow, black) = RgbToCmyk(color.R, color.G, color.B);
+        string cmyk = FormattableString.Invariant($"cmyk({cyan:F0}%, {magenta:F0}%, {yellow:F0}%, {black:F0}%)");
 
-        return new ColorDetails(c, hex, rgb, hsl, hsv, cmyk, count, percentage);
+        return new ColorDetails(color, hex, rgb, hsl, hsv, cmyk, count, percentage);
     }
 
-    private static (double H, double S, double L) RgbToHsl(int r, int g, int b)
+    // HSL: светлота — середина между самым ярким и самым тёмным нормированным каналом.
+    private static (double H, double S, double L) RgbToHsl(int red, int green, int blue)
     {
-        double rd = r / 255.0, gd = g / 255.0, bd = b / 255.0;
-        double max = Math.Max(rd, Math.Max(gd, bd));
-        double min = Math.Min(rd, Math.Min(gd, bd));
-        double h = 0, s = 0, l = (max + min) / 2.0;
+        double normalizedRed = red / 255.0;
+        double normalizedGreen = green / 255.0;
+        double normalizedBlue = blue / 255.0;
+        double maximum = Math.Max(normalizedRed, Math.Max(normalizedGreen, normalizedBlue));
+        double minimum = Math.Min(normalizedRed, Math.Min(normalizedGreen, normalizedBlue));
+        double hue = 0;
+        double saturation = 0;
+        double lightness = (maximum + minimum) / 2.0;
 
-        if (Math.Abs(max - min) > 0.0001)
+        if (Math.Abs(maximum - minimum) > 0.0001)
         {
-            double d = max - min;
-            s = l > 0.5 ? d / (2.0 - max - min) : d / (max + min);
+            double range = maximum - minimum;
+            saturation = lightness > 0.5 ? range / (2.0 - maximum - minimum) : range / (maximum + minimum);
 
-            if (Math.Abs(max - rd) < 0.0001)
-                h = (gd - bd) / d + (gd < bd ? 6.0 : 0.0);
-            else if (Math.Abs(max - gd) < 0.0001)
-                h = (bd - rd) / d + 2.0;
-            else
-                h = (rd - gd) / d + 4.0;
-
-            h /= 6.0;
+            hue = CalculateHueTurns(normalizedRed, normalizedGreen, normalizedBlue, maximum, range);
         }
-        return (h * 360.0, s * 100.0, l * 100.0);
+        return (hue * 360.0, saturation * 100.0, lightness * 100.0);
     }
 
-    private static (double H, double S, double V) RgbToHsv(int r, int g, int b)
+    // HSV: яркость — максимальный канал, насыщенность — доля цветового разброса в яркости.
+    private static (double H, double S, double V) RgbToHsv(int red, int green, int blue)
     {
-        double rd = r / 255.0, gd = g / 255.0, bd = b / 255.0;
-        double max = Math.Max(rd, Math.Max(gd, bd));
-        double min = Math.Min(rd, Math.Min(gd, bd));
-        double d = max - min;
-        double h = 0;
-        double s = max == 0 ? 0 : d / max;
-        double v = max;
+        double normalizedRed = red / 255.0;
+        double normalizedGreen = green / 255.0;
+        double normalizedBlue = blue / 255.0;
+        double maximum = Math.Max(normalizedRed, Math.Max(normalizedGreen, normalizedBlue));
+        double minimum = Math.Min(normalizedRed, Math.Min(normalizedGreen, normalizedBlue));
+        double range = maximum - minimum;
+        double hue = 0;
+        double saturation = maximum == 0 ? 0 : range / maximum;
+        double value = maximum;
 
-        if (Math.Abs(max - min) > 0.0001)
+        if (Math.Abs(maximum - minimum) > 0.0001)
         {
-            if (Math.Abs(max - rd) < 0.0001)
-                h = (gd - bd) / d + (gd < bd ? 6.0 : 0.0);
-            else if (Math.Abs(max - gd) < 0.0001)
-                h = (bd - rd) / d + 2.0;
-            else
-                h = (rd - gd) / d + 4.0;
-
-            h /= 6.0;
+            hue = CalculateHueTurns(normalizedRed, normalizedGreen, normalizedBlue, maximum, range);
         }
-        return (h * 360.0, s * 100.0, v * 100.0);
+        return (hue * 360.0, saturation * 100.0, value * 100.0);
     }
 
-    private static (double C, double M, double Y, double K) RgbToCmyk(int r, int g, int b)
+    // Для чёрного нужен отдельный случай: общая формула делила бы на ноль.
+    private static (double C, double M, double Y, double K) RgbToCmyk(int red, int green, int blue)
     {
-        if (r == 0 && g == 0 && b == 0) return (0, 0, 0, 100);
-        double rd = r / 255.0, gd = g / 255.0, bd = b / 255.0;
-        double k = 1.0 - Math.Max(rd, Math.Max(gd, bd));
-        double c = (1.0 - rd - k) / (1.0 - k);
-        double m = (1.0 - gd - k) / (1.0 - k);
-        double y = (1.0 - bd - k) / (1.0 - k);
-        return (c * 100.0, m * 100.0, y * 100.0, k * 100.0);
+        if (red == 0 && green == 0 && blue == 0)
+        {
+            return (0, 0, 0, 100);
+        }
+        double normalizedRed = red / 255.0;
+        double normalizedGreen = green / 255.0;
+        double normalizedBlue = blue / 255.0;
+        double black = 1.0 - Math.Max(normalizedRed, Math.Max(normalizedGreen, normalizedBlue));
+        double cyan = (1.0 - normalizedRed - black) / (1.0 - black);
+        double magenta = (1.0 - normalizedGreen - black) / (1.0 - black);
+        double yellow = (1.0 - normalizedBlue - black) / (1.0 - black);
+        return (cyan * 100.0, magenta * 100.0, yellow * 100.0, black * 100.0);
+    }
+
+    // HSL и HSV используют один цветовой круг: результат здесь — доля оборота [0, 1].
+    private static double CalculateHueTurns(double red, double green, double blue, double maximum, double range)
+    {
+        double hue;
+        if (Math.Abs(maximum - red) < 0.0001)
+        {
+            hue = (green - blue) / range + (green < blue ? 6.0 : 0.0);
+        }
+        else if (Math.Abs(maximum - green) < 0.0001)
+        {
+            hue = (blue - red) / range + 2.0;
+        }
+        else
+        {
+            hue = (red - green) / range + 4.0;
+        }
+        return hue / 6.0;
     }
 }

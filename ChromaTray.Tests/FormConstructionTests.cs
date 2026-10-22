@@ -22,12 +22,18 @@ public class FormConstructionTests
                 Assert.NotEqual(IntPtr.Zero, dashboard.Handle);
                 Assert.NotEqual(IntPtr.Zero, settings.Handle);
             }
-            catch (Exception ex) { failure = ex; }
+            catch (Exception ex)
+            {
+                failure = ex;
+            }
         });
         thread.SetApartmentState(ApartmentState.STA);
         thread.IsBackground = true;
         thread.Start();
         Assert.True(thread.Join(TimeSpan.FromSeconds(20)), "Creating the desktop forms timed out.");
-        if (failure is not null) ExceptionDispatchInfo.Capture(failure).Throw();
+        if (failure is not null)
+        {
+            ExceptionDispatchInfo.Capture(failure).Throw();
+        }
     }
 }

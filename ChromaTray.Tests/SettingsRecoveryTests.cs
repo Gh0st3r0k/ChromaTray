@@ -28,7 +28,7 @@ public sealed class SettingsRecoveryTests : IDisposable
     public void RepeatedSave_ReplacesTheFileAndLeavesNoTemporaryFiles()
     {
         string path = Path.Combine(_directory, "settings.json");
-        var settings = new AppSettings();
+        var settings = new AppSettings { GroupSimilarColors = true };
         settings.Save(path);
         settings.GroupSimilarColors = false;
         settings.Save(path);
@@ -59,6 +59,9 @@ public sealed class SettingsRecoveryTests : IDisposable
 
     public void Dispose()
     {
-        if (Directory.Exists(_directory)) Directory.Delete(_directory, true);
+        if (Directory.Exists(_directory))
+        {
+            Directory.Delete(_directory, true);
+        }
     }
 }

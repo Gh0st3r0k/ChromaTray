@@ -5,40 +5,48 @@ using System.Runtime.InteropServices;
 
 namespace ChromaTray.Services;
 
+/// <summary>
+/// Адаптер Bitmap: читает пиксели построчно и передаёт их независимому от Windows счётчику PaletteHistogram.
+/// </summary>
 public static class PaletteAnalyzer
 {
-    public static PaletteAnalysisResult AnalyzeBitmap(Bitmap bmp, bool groupSimilar, int maxResults = 500,
+    public static PaletteAnalysisResult AnalyzeBitmap(Bitmap bitmap, bool groupSimilar, int maxResults = 500,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(bmp);
+        ArgumentNullException.ThrowIfNull(bitmap);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxResults);
         cancellationToken.ThrowIfCancellationRequested();
         var timer = Stopwatch.StartNew();
-        var rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+        var bounds = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
 
-        // Convert imported bitmaps when necessary; screenshots are already 32bpp ARGB.
-        using var converted = bmp.PixelFormat == PixelFormat.Format32bppArgb
-            ? null : bmp.Clone(rect, PixelFormat.Format32bppArgb);
-        var source = converted ?? bmp;
-        var data = source.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+        // Скриншоты уже имеют формат 32bpp. Другой Bitmap преобразуем, не меняя оригинал.
+        using var converted = bitmap.PixelFormat == PixelFormat.Format32bppArgb
+            ? null : bitmap.Clone(bounds, PixelFormat.Format32bppArgb);
+        var source = converted ?? bitmap;
+        var pixelData = source.LockBits(bounds, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
         var histogram = new PaletteHistogram(groupSimilar);
         try
         {
-            // Scan0 + y * Stride supports positive and negative row strides.
-            byte[] row = new byte[checked(bmp.Width * 4)];
-            for (int y = 0; y < bmp.Height; y++)
+            // Stride — шаг строки в памяти, включая выравнивание; он может быть отрицательным.
+            // BGRA — порядок байтов в памяти, хотя название формата в .NET содержит ARGB.
+            byte[] rowBytes = new byte[checked(bitmap.Width * 4)];
+            for (int y = 0; y < bitmap.Height; y++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                Marshal.Copy(IntPtr.Add(data.Scan0, checked(y * data.Stride)), row, 0, row.Length);
-                histogram.AddBgraRow(row);
+                Marshal.Copy(IntPtr.Add(pixelData.Scan0, checked(y * pixelData.Stride)), rowBytes, 0, rowBytes.Length);
+                histogram.AddBgraRow(rowBytes);
             }
         }
         finally
         {
-            source.UnlockBits(data);
+            // Освобождаем блокировку и при отмене/ошибке: иначе Bitmap нельзя использовать снова.
+            source.UnlockBits(pixelData);
         }
 
         var result = histogram.Complete(maxResults);
-        return result with { ElapsedMilliseconds = timer.ElapsedMilliseconds };
+        return result with
+        {
+            ElapsedMilliseconds = timer.ElapsedMilliseconds
+        };
     }
 }

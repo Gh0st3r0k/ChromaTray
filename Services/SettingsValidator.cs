@@ -9,6 +9,9 @@ public record ValidationResult(bool IsValid, string ErrorCode, string Message)
     public static ValidationResult Fail(string code, string message) => new(false, code, message);
 }
 
+/// <summary>
+/// Проверяет допустимость хоткеев и выбранных форматов; не сохраняет и не изменяет настройки.
+/// </summary>
 public static class SettingsValidator
 {
     public static bool IsModifierOnlyKey(Keys keyCode) =>
@@ -28,7 +31,9 @@ public static class SettingsValidator
 
         bool isFunctionKey = binding.Key >= Keys.F1 && binding.Key <= Keys.F12;
         if (binding.Key == Keys.F12)
+        {
             return ValidationResult.Fail("ERR_HOTKEY_RESERVED", "F12 is reserved by Windows for debugging.");
+        }
         if (!binding.Ctrl && !binding.Shift && !binding.Alt && !isFunctionKey)
         {
             return ValidationResult.Fail(
@@ -45,10 +50,16 @@ public static class SettingsValidator
         IReadOnlyCollection<ColorFormat> activeFormats)
     {
         var pointCheck = ValidateHotkeyBinding(pointHotkey);
-        if (!pointCheck.IsValid) return pointCheck;
+        if (!pointCheck.IsValid)
+        {
+            return pointCheck;
+        }
 
         var regionCheck = ValidateHotkeyBinding(regionHotkey);
-        if (!regionCheck.IsValid) return regionCheck;
+        if (!regionCheck.IsValid)
+        {
+            return regionCheck;
+        }
 
         if (pointHotkey.ToString().Equals(regionHotkey.ToString(), StringComparison.OrdinalIgnoreCase))
         {
@@ -65,7 +76,9 @@ public static class SettingsValidator
         }
 
         if (activeFormats.Any(format => !Enum.IsDefined(format)))
+        {
             return ValidationResult.Fail("ERR_FORMAT_UNKNOWN", "An unknown color format is selected.");
+        }
 
         return ValidationResult.Success();
     }

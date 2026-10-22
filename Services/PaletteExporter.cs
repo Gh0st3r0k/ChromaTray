@@ -13,20 +13,25 @@ public enum PaletteExportMode
     JsonArray = 3
 }
 
+/// <summary>
+/// Формирует текст для буфера обмена без обращения к интерфейсу или файловой системе.
+/// </summary>
 public static class PaletteExporter
 {
     public static string FormatSingleColorSummary(ColorDetails color, IReadOnlyList<ColorFormat> activeFormats)
     {
         if (activeFormats == null || activeFormats.Count == 0)
-            throw new ArgumentException("At least one active color format is required.", nameof(activeFormats));
-
-        var sb = new StringBuilder();
-        foreach (var fmt in activeFormats)
         {
-            string label = ColorDetails.GetFormatLabel(fmt).PadRight(5);
-            sb.AppendLine($"{label}: {color.GetValue(fmt)}");
+            throw new ArgumentException("At least one active color format is required.", nameof(activeFormats));
         }
-        return sb.ToString().TrimEnd();
+
+        var output = new StringBuilder();
+        foreach (var format in activeFormats)
+        {
+            string label = ColorDetails.GetFormatLabel(format).PadRight(5);
+            output.AppendLine($"{label}: {color.GetValue(format)}");
+        }
+        return output.ToString().TrimEnd();
     }
 
     public static string FormatEntirePalette(
@@ -35,57 +40,84 @@ public static class PaletteExporter
         PaletteExportMode mode)
     {
         if (palette == null || palette.Count == 0)
+        {
             return string.Empty;
+        }
 
         if (activeFormats == null || activeFormats.Count == 0)
+        {
             throw new ArgumentException("At least one active color format is required.", nameof(activeFormats));
+        }
 
-        var sb = new StringBuilder();
-        var primaryFmt = activeFormats[0];
+        var output = new StringBuilder();
+        var primaryFormat = activeFormats[0];
 
         switch (mode)
         {
             case PaletteExportMode.AllActiveFormats:
-                foreach (var c in palette)
-                {
-                    var parts = activeFormats.Select(c.GetValue);
-                    sb.AppendLine($"{string.Join(" | ", parts)} ({c.Percentage.ToString("F1", CultureInfo.InvariantCulture)}%)");
-                }
+                WriteAllFormats(output, palette, activeFormats);
                 break;
-
             case PaletteExportMode.PrimaryFormatOnly:
-                foreach (var c in palette)
-                    sb.AppendLine(c.GetValue(primaryFmt));
+                WritePrimaryFormat(output, palette, primaryFormat);
                 break;
-
             case PaletteExportMode.CssVariables:
-                sb.AppendLine(":root {");
-                for (int i = 0; i < palette.Count; i++)
-                    sb.AppendLine($"  --color-{i + 1}: {palette[i].GetValue(primaryFmt is ColorFormat.Hsv or ColorFormat.Cmyk ? ColorFormat.Hex : primaryFmt)};");
-                sb.AppendLine("}");
+                WriteCssVariables(output, palette, primaryFormat);
                 break;
-
             case PaletteExportMode.JsonArray:
-                sb.AppendLine("[");
-                for (int i = 0; i < palette.Count; i++)
-                {
-                    var c = palette[i];
-                    var props = new List<string>();
-                    foreach (var fmt in activeFormats)
-                    {
-                        string key = fmt.ToString().ToLowerInvariant();
-                        props.Add($"\"{key}\": {JsonSerializer.Serialize(c.GetValue(fmt))}");
-                    }
-                    props.Add($"\"sharePercent\": {c.Percentage.ToString("F2", CultureInfo.InvariantCulture)}");
-                    string comma = i < palette.Count - 1 ? "," : "";
-                    sb.AppendLine($"  {{ {string.Join(", ", props)} }}{comma}");
-                }
-                sb.AppendLine("]");
+                WriteJsonArray(output, palette, activeFormats);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(mode), mode, "Unknown export mode.");
         }
 
-        return sb.ToString().TrimEnd();
+        return output.ToString().TrimEnd();
+    }
+
+    private static void WriteAllFormats(StringBuilder output, IReadOnlyList<ColorDetails> palette, IReadOnlyList<ColorFormat> activeFormats)
+    {
+        foreach (var color in palette)
+        {
+            var parts = activeFormats.Select(color.GetValue);
+            output.AppendLine($"{string.Join(" | ", parts)} ({color.Percentage.ToString("F1", CultureInfo.InvariantCulture)}%)");
+        }
+    }
+
+    private static void WritePrimaryFormat(StringBuilder output, IReadOnlyList<ColorDetails> palette, ColorFormat primaryFormat)
+    {
+        foreach (var color in palette)
+        {
+            output.AppendLine(color.GetValue(primaryFormat));
+        }
+    }
+
+    private static void WriteCssVariables(StringBuilder output, IReadOnlyList<ColorDetails> palette, ColorFormat primaryFormat)
+    {
+        // В CSS нет стандартных hsv()/cmyk(): для этих основных форматов используем HEX.
+        output.AppendLine(":root {");
+        for (int i = 0; i < palette.Count; i++)
+        {
+            output.AppendLine($"  --color-{i + 1}: {palette[i].GetValue(primaryFormat is ColorFormat.Hsv or ColorFormat.Cmyk ? ColorFormat.Hex : primaryFormat)};");
+        }
+        output.AppendLine("}");
+    }
+
+    private static void WriteJsonArray(StringBuilder output, IReadOnlyList<ColorDetails> palette, IReadOnlyList<ColorFormat> activeFormats)
+    {
+        output.AppendLine("[");
+        for (int i = 0; i < palette.Count; i++)
+        {
+            var color = palette[i];
+            var properties = new List<string>();
+            foreach (var format in activeFormats)
+            {
+                string key = format.ToString().ToLowerInvariant();
+                // JSON-сериализатор экранирует строку формата, включая кавычки и управляющие символы.
+                properties.Add($"\"{key}\": {JsonSerializer.Serialize(color.GetValue(format))}");
+            }
+            properties.Add($"\"sharePercent\": {color.Percentage.ToString("F2", CultureInfo.InvariantCulture)}");
+            string comma = i < palette.Count - 1 ? "," : "";
+            output.AppendLine($"  {{ {string.Join(", ", properties)} }}{comma}");
+        }
+        output.AppendLine("]");
     }
 }

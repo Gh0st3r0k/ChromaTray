@@ -2,6 +2,9 @@ using Xunit.Sdk;
 
 namespace ChromaTray.Tests.Diagnostics;
 
+/// <summary>
+/// Проверки с подробным сообщением: входные данные, ожидаемый результат и подсказка для поиска ошибки.
+/// </summary>
 public static class DiagAssert
 {
     public static void Equal<T>(

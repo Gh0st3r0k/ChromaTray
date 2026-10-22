@@ -9,7 +9,9 @@ using Xunit;
 namespace ChromaTray.Tests;
 
 [CollectionDefinition("Desktop UI", DisableParallelization = true)]
-public sealed class DesktopUiCollection { }
+public sealed class DesktopUiCollection
+{
+}
 
 [Collection("Desktop UI")]
 public class DesignLayoutTests
@@ -66,7 +68,9 @@ public class DesignLayoutTests
                 g.FillRectangle(brush, 220, 180, 220, 220);
             }
             using var overlay = new ScreenOverlayForm(CaptureMode.Point, screen, new Rectangle(0, 0, 960, 640),
-                [new(0, 0, 960, 640)], _ => { }, new(300, 280));
+                [new(0, 0, 960, 640)], _ =>
+                {
+                }, new(300, 280));
             _ = overlay.Handle;
             SavePreview(overlay, "point-picker.png");
         });
@@ -75,7 +79,10 @@ public class DesignLayoutTests
     private static void SavePreview(Form form, string filename)
     {
         var directory = Environment.GetEnvironmentVariable("CHROMATRAY_UI_PREVIEW_DIR");
-        if (string.IsNullOrEmpty(directory)) return;
+        if (string.IsNullOrEmpty(directory))
+        {
+            return;
+        }
         Directory.CreateDirectory(directory);
         form.PerformLayout();
         using var image = new Bitmap(form.Width, form.Height);
