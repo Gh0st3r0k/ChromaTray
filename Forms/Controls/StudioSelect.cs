@@ -26,11 +26,11 @@ internal sealed class StudioSelect : Control
     {
         DoubleBuffered = true;
         ResizeRedraw = true;
-        SetStyle(ControlStyles.Selectable, true);
+        SetStyle(ControlStyles.Selectable | ControlStyles.SupportsTransparentBackColor, true);
         TabStop = true;
         Cursor = Cursors.Hand;
         Font = StudioTheme.Body;
-        BackColor = StudioTheme.Surface;
+        BackColor = Color.Transparent;
         AccessibleRole = AccessibleRole.ComboBox;
         _menu = new ToolStripDropDownMenu
         {

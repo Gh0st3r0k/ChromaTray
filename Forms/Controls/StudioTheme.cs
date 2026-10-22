@@ -120,6 +120,10 @@ internal sealed class StudioButton : Button
     public StudioButton()
     {
         SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw | ControlStyles.SupportsTransparentBackColor, true);
+        // ButtonBase sets Opaque and expects its painter to cover every pixel.
+        // Our rounded face leaves the corners exposed, so paint the parent's
+        // background there before drawing the antialiased path.
+        SetStyle(ControlStyles.Opaque, false);
         FlatStyle = FlatStyle.Flat;
         FlatAppearance.BorderSize = 0;
         Font = StudioTheme.Strong;

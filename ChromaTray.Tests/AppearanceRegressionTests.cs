@@ -15,6 +15,70 @@ public class AppearanceRegressionTests
 {
     [Theory]
     [InlineData(96)]
+    [InlineData(144)]
+    [InlineData(192)]
+    public void RoundedControls_KeepThePaintedParentVisibleOutsideTheirCurves(int dpi)
+    {
+        OverlayKeyboardTests.OnSta(() =>
+        {
+            // The custom fill differs from both Canvas and Surface. This also
+            // detects a fix that merely paints a hard-coded corner color.
+            var background = Color.FromArgb(47, 69, 93);
+            using var host = new Form { ClientSize = new Size(600, 360), BackColor = StudioTheme.Canvas,
+                AutoScaleDimensions = new SizeF(96, 96), AutoScaleMode = AutoScaleMode.Dpi };
+            var card = new SurfacePanel { Dock = DockStyle.Fill, FillColor = background };
+            var container = new Panel { Dock = DockStyle.Fill, BackColor = Color.Transparent };
+            var button = new StudioButton { Text = "Rounded button", Bounds = new Rectangle(40, 40, 240, 56) };
+            var select = new StudioSelect { Bounds = new Rectangle(40, 120, 240, 48) };
+            select.SetItems("All active formats", "JSON palette array");
+            container.Controls.Add(button);
+            container.Controls.Add(select);
+            card.Controls.Add(container);
+            host.Controls.Add(card);
+            host.Show();
+            ApplyDpiChange(host, dpi);
+
+            void AssertCorners(Control control, string state)
+            {
+                using var rendered = new Bitmap(control.Width, control.Height);
+                control.DrawToBitmap(rendered, control.ClientRectangle);
+                foreach (int x in new[] { 0, 1, control.Width - 2, control.Width - 1 })
+                    foreach (int y in new[] { 0, 1, control.Height - 2, control.Height - 1 })
+                        Assert.True(background.ToArgb() == rendered.GetPixel(x, y).ToArgb(),
+                            $"{control.GetType().Name} has an incorrect corner at {x},{y}, {state}, DPI {dpi}: {rendered.GetPixel(x, y)}.");
+            }
+            void MouseEvent(string method, EventArgs args) => typeof(StudioButton)
+                .GetMethod(method, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+                .Invoke(button, [args]);
+
+            foreach (bool primary in new[] { false, true })
+            {
+                button.Primary = primary;
+                MouseEvent("OnMouseLeave", EventArgs.Empty);
+                AssertCorners(button, $"normal, primary={primary}");
+                MouseEvent("OnMouseEnter", EventArgs.Empty);
+                AssertCorners(button, $"hover, primary={primary}");
+                MouseEvent("OnMouseDown", new MouseEventArgs(MouseButtons.Left, 1, 20, 20, 0));
+                AssertCorners(button, $"pressed, primary={primary}");
+                MouseEvent("OnMouseUp", new MouseEventArgs(MouseButtons.Left, 1, 20, 20, 0));
+                button.Focus();
+                AssertCorners(button, $"focused, primary={primary}");
+                button.Enabled = false;
+                AssertCorners(button, $"disabled, primary={primary}");
+                button.Enabled = true;
+            }
+            AssertCorners(select, "closed");
+            select.Focus();
+            AssertCorners(select, "focused");
+            select.OpenDropDown();
+            AssertCorners(select, "open");
+            select.CloseDropDown();
+            SavePreview(host, $"rounded-controls-dpi-{dpi}.png");
+        });
+    }
+
+    [Theory]
+    [InlineData(96)]
     [InlineData(120)]
     [InlineData(144)]
     [InlineData(192)]
