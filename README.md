@@ -159,6 +159,10 @@ dotnet test ChromaTray.Core.Tests/ChromaTray.Core.Tests.csproj -c Release --no-r
 
 GitHub Actions runs Linux algorithm tests and Windows regression tests. Version tags matching `v*.*.*` additionally publish the two executables and checksums after both jobs pass. See [development and release instructions](docs/DEVELOPMENT.md).
 
+## AI-assisted development
+
+ChromaTray is developed by **Kostiantyn Zaitsev (Gh0st3r0k)** with AI used as a development tool. The author actively defines requirements, shapes the design and user experience, evaluates results, and guides implementation. AI tools assist with coding, refactoring, debugging, tests, and documentation, while the author directs the project and makes the final decisions.
+
 ## License
 
 [MIT](LICENSE) · Kostiantyn Zaitsev
