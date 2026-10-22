@@ -1,0 +1,11 @@
+- name: Prehľad
+  href: index.md
+- name: Začíname
+  href: getting-started.md
+- name: Vývoj
+  href: development.md
+- name: Referencia API
+  href: ../../api/toc.yml
+  homepage: api/index.md
+- name: GitHub
+  href: https://github.com/Gh0st3r0k/ChromaTray

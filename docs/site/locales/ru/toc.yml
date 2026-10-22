@@ -1,0 +1,11 @@
+- name: Обзор
+  href: index.md
+- name: Начало работы
+  href: getting-started.md
+- name: Разработка
+  href: development.md
+- name: Справочник API
+  href: ../../api/toc.yml
+  homepage: api/index.md
+- name: GitHub
+  href: https://github.com/Gh0st3r0k/ChromaTray

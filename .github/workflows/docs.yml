@@ -10,6 +10,7 @@ on:
       - 'packages.lock.json'
       - '.config/dotnet-tools.json'
       - 'docs/site/**'
+      - 'scripts/build-docs.py'
       - 'docs/assets/logo.svg'
       - '.github/workflows/docs.yml'
   pull_request:
@@ -21,6 +22,7 @@ on:
       - 'packages.lock.json'
       - '.config/dotnet-tools.json'
       - 'docs/site/**'
+      - 'scripts/build-docs.py'
       - 'docs/assets/logo.svg'
       - '.github/workflows/docs.yml'
   workflow_dispatch:
@@ -30,7 +32,7 @@ permissions:
 
 jobs:
   build:
-    name: Build English documentation
+    name: Build documentation in five languages
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -39,12 +41,15 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
       - name: Restore the pinned DocFX tool
         run: dotnet tool restore
       - name: Restore project references
         run: dotnet restore ChromaTray.csproj --locked-mode
       - name: Generate API metadata and build the site
-        run: dotnet docfx docs/site/docfx.json --warningsAsErrors
+        run: python scripts/build-docs.py
       - uses: actions/upload-artifact@v4
         with:
           name: documentation-site

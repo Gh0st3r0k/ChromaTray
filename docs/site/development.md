@@ -33,12 +33,12 @@ The full suite requires Windows. On Linux/macOS, run `ChromaTray.Core.Tests/Chro
 
 ## Build this documentation
 
-Run from the repository root with the .NET 8 SDK:
+Run from the repository root with the .NET 8 SDK and Python 3:
 
 ```powershell
 dotnet tool restore
 dotnet restore ChromaTray.csproj --locked-mode
-dotnet docfx docs/site/docfx.json --warningsAsErrors
+python scripts/build-docs.py
 ```
 
 The static site is written to `artifacts/docs-site`. To preview it:
@@ -48,6 +48,8 @@ dotnet docfx serve artifacts/docs-site --port 8080
 ```
 
 Open `http://localhost:8080`. API metadata and HTML are generated outputs and are excluded from Git. DocFX's version is pinned in `.config/dotnet-tools.json`.
+
+On Linux/macOS, use `python3` if `python` is unavailable. English remains at the site root; translations use `/sk/`, `/cs/`, `/ru/`, and `/uk/`. Each language has its own search index. Edit translated guides in `docs/site/locales/<language>` and interface strings in that folder's `template/token.json`. The shared template adds the page-preserving language selector. API descriptions remain generated from English XML comments so that they stay synchronized with code.
 
 Update `/// <summary>`, `<param>`, and `<returns>` comments in the C# source to update API descriptions. Ordinary `//` implementation comments remain in the source. The API reference shows the project's public types and members; this page also explains the internal components.
 

@@ -106,16 +106,18 @@ JSON с включёнными HEX и HSL:
 
 ## Документация DocFX
 
-Англоязычный сайт содержит краткий запуск, обзор архитектуры и API-справочник, который формируется из C# и XML-комментариев. [Workflow Documentation](https://github.com/Gh0st3r0k/ChromaTray/actions/workflows/docs.yml) пересобирает его при изменениях и сохраняет готовый сайт в артефакте `documentation-site`.
+Сайт содержит руководства на **английском, словацком, чешском, русском и украинском**. Переключатель языка сохраняет открытую страницу; поиск работает отдельно для каждого языка. Описания API формируются из английских XML-комментариев C#. [Workflow Documentation](https://github.com/Gh0st3r0k/ChromaTray/actions/workflows/docs.yml) пересобирает все языки и сохраняет готовый сайт в артефакте `documentation-site`.
+
+Для сборки сайта нужны .NET 8 SDK и Python 3:
 
 ```powershell
 dotnet tool restore
 dotnet restore ChromaTray.csproj --locked-mode
-dotnet docfx docs/site/docfx.json --warningsAsErrors
+python scripts/build-docs.py
 dotnet docfx serve artifacts/docs-site --port 8080
 ```
 
-Откройте `http://localhost:8080`. Разовая настройка публикации GitHub Pages описана в [Development](docs/site/development.md#automatic-updates). Исходники сайта — в `docs/site`; генерируемые HTML и API-метаданные в Git не сохраняются.
+Откройте `http://localhost:8080` (русская версия — `/ru/`). На Linux/macOS при необходимости используйте `python3`. Разовая настройка публикации GitHub Pages описана в [Development](docs/site/development.md#automatic-updates). Исходники сайта — в `docs/site`; переводы — в `docs/site/locales`; генерируемые HTML и API-метаданные в Git не сохраняются.
 
 ## Разработка и проверки
 

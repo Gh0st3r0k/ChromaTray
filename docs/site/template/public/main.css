@@ -36,6 +36,37 @@ header.bg-body {
   flex-shrink: 0;
 }
 
+.language-selector {
+  width: 9rem;
+  flex-shrink: 0;
+  margin-left: auto;
+  margin-right: 0.5rem;
+  border-color: var(--chromatray-aqua);
+  color: #f0fff9;
+  background-color: var(--chromatray-navy);
+}
+
+/* Keep the language control reachable even while the mobile menu is collapsed. */
+@media (min-width: 768px) {
+  .language-selector {
+    order: 3;
+    margin-left: 1rem;
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .navbar-brand {
+    font-size: 1rem;
+    margin-right: 0.5rem;
+  }
+
+  .language-selector {
+    width: 8rem;
+    margin-right: 0;
+  }
+}
+
 article h1 {
   letter-spacing: -0.035em;
   font-weight: 700;
