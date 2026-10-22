@@ -15,6 +15,8 @@ dotnet restore ChromaTray.csproj --locked-mode
 dotnet run --project ChromaTray.csproj
 ```
 
+The SDK must be in the **8.0.4xx** feature band selected by `global.json`. For Visual Studio setup, executable publishing, settings recovery, and common errors, use the [complete local setup guide](https://github.com/Gh0st3r0k/ChromaTray/blob/main/docs/RUNNING.md).
+
 ## Capture colors
 
 | Action | Control |
@@ -35,3 +37,9 @@ The app hides its own window before taking a frozen desktop snapshot. Point pick
 Choose a palette row to update the color inspector. On narrow windows, use the **Palette** and **Inspector** tabs. The export selector supports active formats, the primary format, CSS custom properties, and JSON.
 
 **Group similar shades** is below the palette heading and also in Settings. It is off by default. When enabled, each RGB bucket is represented by its most frequent original color; its count combines all shades in that bucket. The list shows up to 500 entries, with percentages calculated from the entire captured region.
+
+The primary format is the first enabled entry in HEX, RGB, HSL, HSV, CMYK order. Disable HEX in Settings to make quick copy use RGB. CSS export uses HEX when HSV or CMYK is primary; text and JSON preserve enabled representations.
+
+## Settings and closing the app
+
+Preferences are stored at `%LocalAppData%\ChromaTray\settings.json`. Closing the dashboard keeps the tray application running. Restore it with the tray icon, or choose **Exit** from its menu to stop the process. To reset preferences, exit first, rename the settings file, and restart.

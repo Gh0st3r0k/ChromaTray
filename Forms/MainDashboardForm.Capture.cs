@@ -4,7 +4,7 @@ using ChromaTray.Services;
 
 namespace ChromaTray.Forms;
 
-// Подготовка рабочего стола, выбор точки/региона и отменяемый анализ в фоне.
+// Desktop preparation, point/region selection, and cancellable background analysis.
 public partial class MainDashboardForm
 {
     private Bitmap? _lastRegionBitmap;
@@ -12,7 +12,7 @@ public partial class MainDashboardForm
     private int _analysisVersion;
     private CancellationTokenSource? _analysisCancellation;
 
-    // Асинхронная точка входа для кнопок и Win32-хоткеев. Ожидаемые ошибки обрабатываются здесь.
+    // Async entry point for buttons and Win32 hotkeys. Handle expected failures here.
     private async void StartCapture(CaptureMode mode)
     {
         if (_isCapturing || _isSettingsDialogOpen || _isExiting)
@@ -29,7 +29,7 @@ public partial class MainDashboardForm
             ScreenOverlayForm overlay;
             using (var hidden = new DesktopCaptureScope(this))
             {
-                // Сначала скрываем окно и ждём завершения кадра DWM, затем создаём снимок.
+                // Hide the window and wait for DWM to finish its frame before taking the snapshot.
                 await hidden.WaitForDesktopAsync();
                 if (IsDisposed || _isExiting)
                 {
@@ -84,14 +84,14 @@ public partial class MainDashboardForm
         _analysisCancellation?.Cancel();
         using var cancellation = new CancellationTokenSource();
         _analysisCancellation = cancellation;
-        // Фоновый анализ получает собственный снимок: новый захват может освободить предыдущую область.
+        // Background analysis owns its snapshot: a new capture may dispose the previous region.
         using var snapshot = (Bitmap)bitmap.Clone();
         bool groupSimilar = _settings.GroupSimilarColors;
         _statusLabel.Text = "Analyzing region…";
         try
         {
             var analysis = await Task.Run(() => PaletteAnalyzer.AnalyzeBitmap(snapshot, groupSimilar, cancellationToken: cancellation.Token));
-            // Отменённый запрос может успеть завершиться: только последний запрос обновляет UI.
+            // A cancelled request may still finish; only the latest request may update the UI.
             if (IsDisposed || _isExiting || requestVersion != _analysisVersion)
             {
                 return;
@@ -103,7 +103,7 @@ public partial class MainDashboardForm
         }
         catch (OperationCanceledException)
         {
-            // Новый захват или смена группировки отменили предыдущий запрос.
+            // A new capture or grouping change cancelled the previous request.
         }
         catch (Exception ex) when (ex is ExternalException or ArgumentException or InvalidOperationException)
         {
@@ -139,7 +139,7 @@ public partial class MainDashboardForm
     private void ApplyRegionCapture(Bitmap bitmap)
     {
         _lastRegionBitmap?.Dispose();
-        // Overlay владеет своим Bitmap. Копия нужна для повторного анализа после закрытия overlay.
+        // The overlay owns its Bitmap. Keep a copy for reanalysis after the overlay closes.
         _lastRegionBitmap = (Bitmap)bitmap.Clone();
         RunRegionAnalysis(_lastRegionBitmap);
     }

@@ -67,7 +67,7 @@ public static class NativeHotkeyManager
     {
         UnregisterHotKey(handle, id);
         uint modifiers = BuildWin32Modifiers(binding);
-        // Удерживание клавиши должно запускать захват один раз, а не на каждое автоповторение.
+        // Holding a key must trigger capture once, rather than on every auto-repeat event.
         return RegisterHotKey(handle, id, modifiers | NoRepeatModifier, (uint)binding.Key);
     }
 

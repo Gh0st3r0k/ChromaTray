@@ -121,7 +121,7 @@ public static class PaletteExporter
 
     private static void WriteCssVariables(StringBuilder output, IReadOnlyList<ColorDetails> palette, ColorFormat primaryFormat)
     {
-        // В CSS нет стандартных hsv()/cmyk(): для этих основных форматов используем HEX.
+        // CSS has no standard hsv()/cmyk() functions; use HEX when either is the primary format.
         output.AppendLine(":root {");
         for (int i = 0; i < palette.Count; i++)
         {
@@ -140,7 +140,7 @@ public static class PaletteExporter
             foreach (var format in activeFormats)
             {
                 string key = format.ToString().ToLowerInvariant();
-                // JSON-сериализатор экранирует строку формата, включая кавычки и управляющие символы.
+                // The JSON serializer escapes format strings, including quotes and control characters.
                 properties.Add($"\"{key}\": {JsonSerializer.Serialize(color.GetValue(format))}");
             }
             properties.Add($"\"sharePercent\": {color.Percentage.ToString("F2", CultureInfo.InvariantCulture)}");

@@ -79,7 +79,7 @@ public partial class MainDashboardForm : Form
     protected override void OnHandleCreated(EventArgs e)
     {
         base.OnHandleCreated(e);
-        // WinForms может создать HWND ещё до конца инициализации контролов.
+        // WinForms may create the HWND before control initialization has finished.
         StudioTheme.ApplyWindowChrome(this);
         if (_statusLabel is not null)
         {
@@ -144,7 +144,7 @@ public partial class MainDashboardForm : Form
 
     protected override void OnFormClosing(FormClosingEventArgs e)
     {
-        // Крестик скрывает окно; только команда Exit завершает приложение.
+        // The close button hides the window; only Exit terminates the application.
         if (!_isExiting && e.CloseReason == CloseReason.UserClosing)
         {
             e.Cancel = true;
@@ -249,7 +249,7 @@ public partial class MainDashboardForm : Form
         IntPtr handle = bitmap.GetHicon();
         try
         {
-            // FromHandle не владеет HICON. Клонируем и освобождаем исходный native-ресурс ниже.
+            // FromHandle does not own the HICON. Clone it and release the original native resource below.
             using var borrowed = Icon.FromHandle(handle);
             return (Icon)borrowed.Clone();
         }

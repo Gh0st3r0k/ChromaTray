@@ -2,8 +2,8 @@ using System.Runtime.InteropServices;
 
 namespace ChromaTray.Services;
 
-// DWM — компоновщик рабочего стола Windows. Одна задержка не гарантирует,
-// что в снимок не попадёт исчезающее окно или закрывающееся меню.
+// DWM is the Windows desktop compositor. A delay alone cannot guarantee
+// that a fading window or closing menu is absent from the snapshot.
 /// <summary>
 /// Hides the dashboard without an animation while preparing a capture.
 /// Disposal restores window flags but does not show the window.
@@ -39,8 +39,8 @@ internal sealed class DesktopCaptureScope : IDisposable
 
     public async Task WaitForDesktopAsync()
     {
-        // Даём циклу сообщений обработать отпускание кнопки и закрытие меню,
-        // затем ждём обновления кадра компоновщика.
+        // Let the message loop process button release and menu dismissal,
+        // then wait for the compositor to present the next frame.
         await Task.Yield();
         _ = DwmFlush();
         await Task.Delay(DesktopSettleDelayMilliseconds);

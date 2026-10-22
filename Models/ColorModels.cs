@@ -96,7 +96,7 @@ public record ColorDetails(
         _ => format.ToString().ToUpperInvariant()
     };
 
-    // Форматируем с инвариантной культурой: десятичная запятая локали не должна испортить экспорт.
+    // Use invariant formatting so a locale's decimal comma cannot break exported values.
     /// <summary>
     /// Builds all supported representations without changing the original color.
     /// </summary>
@@ -122,7 +122,7 @@ public record ColorDetails(
         return new ColorDetails(color, hex, rgb, hsl, hsv, cmyk, count, percentage);
     }
 
-    // HSL: светлота — середина между самым ярким и самым тёмным нормированным каналом.
+    // HSL lightness is the midpoint between the highest and lowest normalized channels.
     private static (double H, double S, double L) RgbToHsl(int red, int green, int blue)
     {
         double normalizedRed = red / 255.0;
@@ -144,7 +144,7 @@ public record ColorDetails(
         return (hue * 360.0, saturation * 100.0, lightness * 100.0);
     }
 
-    // HSV: яркость — максимальный канал, насыщенность — доля цветового разброса в яркости.
+    // HSV value is the highest channel; saturation is the channel range divided by that value.
     private static (double H, double S, double V) RgbToHsv(int red, int green, int blue)
     {
         double normalizedRed = red / 255.0;
@@ -164,7 +164,7 @@ public record ColorDetails(
         return (hue * 360.0, saturation * 100.0, value * 100.0);
     }
 
-    // Для чёрного нужен отдельный случай: общая формула делила бы на ноль.
+    // Handle black separately because the general formula would divide by zero.
     private static (double C, double M, double Y, double K) RgbToCmyk(int red, int green, int blue)
     {
         if (red == 0 && green == 0 && blue == 0)
@@ -181,7 +181,7 @@ public record ColorDetails(
         return (cyan * 100.0, magenta * 100.0, yellow * 100.0, black * 100.0);
     }
 
-    // HSL и HSV используют один цветовой круг: результат здесь — доля оборота [0, 1].
+    // HSL and HSV share the same hue wheel; return a fraction of a full turn in [0, 1].
     private static double CalculateHueTurns(double red, double green, double blue, double maximum, double range)
     {
         double hue;

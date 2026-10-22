@@ -118,4 +118,4 @@ jobs:
             - **lightweight.exe** — requires the x64 .NET 8 Desktop Runtime.
             - **SHA256SUMS.txt** — checksums for the executables.
 
-            See the README for controls and the Russian local setup guide.
+            See the README for controls and docs/RUNNING.md for the English local setup guide.

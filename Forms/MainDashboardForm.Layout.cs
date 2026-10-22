@@ -2,13 +2,13 @@ using ChromaTray.Forms.Controls;
 using ChromaTray.Models;
 
 namespace ChromaTray.Forms;
-// Сборка интерфейса и адаптация размеров к DPI и доступному месту.
+// Interface construction and layout adjustments for DPI and available space.
 public partial class MainDashboardForm
 {
     private bool _isInspectorViewActive;
     private bool _isUpdatingWorkspace;
 
-    // Контролы создаются один раз в InitializeLayout. Ранние события WinForms проверяют их готовность.
+    // InitializeLayout creates controls once. Early WinForms events check that they are ready.
     private StudioButton _pointButton = null!;
     private StudioButton _regionButton = null!;
     private CheckBox _groupSimilarCheckBox = null!;
@@ -48,7 +48,7 @@ public partial class MainDashboardForm
         Font = StudioTheme.Body;
     }
 
-    // Порядок важен: рабочая область использует уже созданные карточки и элементы заголовка.
+    // Order matters: the workspace uses cards and header controls created earlier.
     private void InitializeLayout()
     {
         BuildHeader();
@@ -214,7 +214,7 @@ public partial class MainDashboardForm
             AccessibleDescription = "Merge similar RGB shades and recalculate the last region."
         };
         _groupSimilarCheckBox.CheckedChanged += OnGroupingChanged;
-        // Отдельная строка сохраняет видимость переключателя при длинном заголовке и большом DPI.
+        // A separate row keeps the toggle visible with a long heading or high DPI.
         _paletteHeader = StudioTheme.Stack((_paletteCountLabel, 24), (_groupSimilarCheckBox, 28));
         _paletteStrip = new PaletteStrip
         {
@@ -374,7 +374,7 @@ public partial class MainDashboardForm
         FitInspectorContent();
     }
 
-    // Все числа ниже — логические размеры при 96 DPI; DpiStackPanel масштабирует их сам.
+    // All dimensions below are logical units at 96 DPI; DpiStackPanel scales them.
     private void ApplyResponsiveLayout()
     {
         bool compact = ClientSize.Height * 96.0 / DeviceDpi < 760;
@@ -417,7 +417,7 @@ public partial class MainDashboardForm
         try
         {
             int Scale(int value) => (int)Math.Round(value * DeviceDpi / 96f);
-            // На узком экране карточки переключаются вкладками вместо двух тесных колонок.
+            // Use tabs on narrow windows so each card has enough room.
             bool narrow = _workspace.ClientSize.Width < Scale(800);
             _wordmark.Visible = !narrow;
             _workspaceTabs.Visible = narrow;
@@ -449,8 +449,8 @@ public partial class MainDashboardForm
             return;
         }
 
-        // Вложенные панели заканчивают масштабирование позже рабочей области.
-        // Для расчёта доступного места используем фактическую высоту содержимого.
+        // Nested panels finish scaling after the workspace.
+        // Use the actual content height when calculating available space.
         int available = (int)Math.Floor(Math.Max(0, _inspectorLayout.ClientSize.Height) * 96.0 / DeviceDpi);
         int copyHeight = available < 136 ? 44 : 58;
         int titleHeight = available < 30 + copyHeight + 48 ? 0 : 30;

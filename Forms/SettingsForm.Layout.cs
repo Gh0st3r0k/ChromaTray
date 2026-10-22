@@ -3,7 +3,7 @@ using ChromaTray.Models;
 
 namespace ChromaTray.Forms;
 
-// Создание контролов отделено от проверки, редактирования и сохранения настроек.
+// Control construction is separate from validating, editing, and saving settings.
 public partial class SettingsForm
 {
     private TextBox _pointHotkeyTextBox = null!;

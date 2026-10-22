@@ -16,7 +16,7 @@ public record PaletteAnalysisResult(
     int UniqueColorsFound,
     long ElapsedMilliseconds);
 
-// Логика не зависит от Bitmap/WinForms и проверяется также на Linux.
+// This logic does not depend on Bitmap or WinForms and is also tested on Linux.
 /// <summary>
 /// Counts RGB frequencies and represents each optional shade group with an actual color from the image.
 /// </summary>
@@ -48,10 +48,10 @@ internal sealed class PaletteHistogram(bool groupSimilar)
     public PaletteAnalysisResult Complete(int maxResults, long elapsedMilliseconds = 0)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxResults);
-        // Центр ячейки служит только ключом группировки, а не отображаемым цветом.
-        // Самый частый исходный RGB группы хранится отдельно от её общей частоты.
+        // The bucket center is only a grouping key, never the displayed color.
+        // Store the group's most frequent original RGB separately from its total frequency.
         var colors = GetDisplayFrequencies();
-        // Проценты считаются от всей области до ограничения top-N. Их сумма в списке может быть меньше 100%.
+        // Calculate percentages over the full region before the top-N limit; listed shares may sum to less than 100%.
         var palette = colors
             .OrderByDescending(pair => pair.Value)
             .ThenBy(pair => pair.Key)
@@ -78,7 +78,7 @@ internal sealed class PaletteHistogram(bool groupSimilar)
 
     private static KeyValuePair<int, int> SummarizeGroup(IEnumerable<KeyValuePair<int, int>> group)
     {
-        // При равных частотах меньший RGB делает результат независимым от порядка сканирования.
+        // Break frequency ties using the lower RGB value so scan order cannot change the result.
         int representativeRgb = group.OrderByDescending(pair => pair.Value).ThenBy(pair => pair.Key).First().Key;
         int pixelCount = group.Sum(pair => pair.Value);
         return new KeyValuePair<int, int>(representativeRgb, pixelCount);

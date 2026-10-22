@@ -28,7 +28,7 @@ public static class PaletteAnalyzer
         var timer = Stopwatch.StartNew();
         var bounds = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
 
-        // Скриншоты уже имеют формат 32bpp. Другой Bitmap преобразуем, не меняя оригинал.
+        // Screenshots are already 32bpp. Convert other Bitmap formats without changing the source.
         using var converted = bitmap.PixelFormat == PixelFormat.Format32bppArgb
             ? null : bitmap.Clone(bounds, PixelFormat.Format32bppArgb);
         var source = converted ?? bitmap;
@@ -36,8 +36,8 @@ public static class PaletteAnalyzer
         var histogram = new PaletteHistogram(groupSimilar);
         try
         {
-            // Stride — шаг строки в памяти, включая выравнивание; он может быть отрицательным.
-            // BGRA — порядок байтов в памяти, хотя название формата в .NET содержит ARGB.
+            // Stride is the row's memory step, including padding; it may be negative.
+            // Bytes are stored as BGRA even though the .NET pixel format is named ARGB.
             byte[] rowBytes = new byte[checked(bitmap.Width * 4)];
             for (int y = 0; y < bitmap.Height; y++)
             {
@@ -48,7 +48,7 @@ public static class PaletteAnalyzer
         }
         finally
         {
-            // Освобождаем блокировку и при отмене/ошибке: иначе Bitmap нельзя использовать снова.
+            // Release the lock on cancellation or failure too, so the Bitmap remains usable.
             source.UnlockBits(pixelData);
         }
 

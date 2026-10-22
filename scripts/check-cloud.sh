@@ -9,8 +9,8 @@ export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export DOTNET_NOLOGO=1
 export PATH="$DOTNET_ROOT:$PATH"
 cd "$project_root"
-# Windows-формы на Linux только компилируются; их запуск проверяет Windows job в CI.
+# Linux only compiles the Windows forms; the Windows CI job runs their tests.
 dotnet build ChromaTray.Tests/ChromaTray.Tests.csproj -c Release --no-restore
-# Чистые алгоритмы выполняются здесь на тех же исходниках, что использует приложение.
+# Run the platform-independent algorithms using the same sources as the application.
 dotnet test ChromaTray.Core.Tests/ChromaTray.Core.Tests.csproj -c Release --no-restore \
     --logger trx --results-directory artifacts/test-results/core

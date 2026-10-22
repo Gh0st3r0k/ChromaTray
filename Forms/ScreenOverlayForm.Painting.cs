@@ -4,8 +4,8 @@ using ChromaTray.Models;
 
 namespace ChromaTray.Forms;
 
-// Только отрисовка: сетка лупы, информация о пикселе и рамка региона.
-// Этот код не изменяет снимок, из которого берутся результаты выбора.
+// Painting only: magnifier grid, pixel information, and region border.
+// This code never changes the snapshot used to read capture results.
 public partial class ScreenOverlayForm
 {
     protected override void OnPaint(PaintEventArgs e)
@@ -27,7 +27,7 @@ public partial class ScreenOverlayForm
             TextRenderer.DrawText(graphics, size, StudioTheme.Mono, badge, StudioTheme.Mint,
                 TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
         }
-        // Точка показывает неизменённый снимок; регион затемняет только пространство вне выделения.
+        // Point mode shows the unmodified snapshot; region mode dims only outside the selection.
         if (_mode == CaptureMode.Point)
         {
             DrawMagnifier(graphics);
@@ -54,7 +54,7 @@ public partial class ScreenOverlayForm
         DrawCard(graphics, new Rectangle(x, y, width, height), Scale(14));
         TextRenderer.DrawText(graphics, "PRECISION PICKER", StudioTheme.Strong, new Rectangle(x + Scale(16), y + Scale(12), Scale(300), Scale(24)), StudioTheme.Accent);
         int gridX = x + Scale(16), gridY = y + Scale(46);
-        // Каждый исходный пиксель рисуется отдельной ячейкой без интерполяции.
+        // Draw each source pixel as an individual cell without interpolation.
         for (int row = 0; row < MagnifierCellsPerSide; row++)
         {
             for (int col = 0; col < MagnifierCellsPerSide; col++)

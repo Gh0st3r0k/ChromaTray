@@ -3,7 +3,7 @@ using Xunit.Sdk;
 namespace ChromaTray.Tests.Diagnostics;
 
 /// <summary>
-/// Проверки с подробным сообщением: входные данные, ожидаемый результат и подсказка для поиска ошибки.
+/// Assertions report the input, expected result, and a hint for diagnosing failures.
 /// </summary>
 public static class DiagAssert
 {

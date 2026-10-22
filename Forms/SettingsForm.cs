@@ -24,7 +24,7 @@ public partial class SettingsForm : Form
     public SettingsForm(AppSettings currentSettings)
     {
         _settings = currentSettings;
-        // Cancel должен отбросить изменения: сочетания редактируются независимо от оригинала.
+        // Cancel must discard edits: shortcut copies are edited independently of the originals.
         _editedPointHotkey = currentSettings.PointHotkey.Clone();
         _editedRegionHotkey = currentSettings.RegionHotkey.Clone();
         ConfigureWindow();
@@ -110,7 +110,7 @@ public partial class SettingsForm : Form
             return;
         }
 
-        // Сначала сохраняем кандидата. При ошибке записи действующие настройки остаются прежними.
+        // Save the candidate first. If writing fails, the active settings remain unchanged.
         var candidate = new AppSettings
         {
             PointHotkey = _editedPointHotkey,

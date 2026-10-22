@@ -75,7 +75,7 @@ public class AppSettings
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
         {
-            // Нечитаемый JSON не должен мешать запуску: используем настройки по умолчанию.
+            // Unreadable JSON must not prevent startup; fall back to the default settings.
         }
         return new AppSettings();
     }
@@ -91,8 +91,8 @@ public class AppSettings
         string path = Path.GetFullPath(customFilePath ?? GetSettingsFilePath());
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         string temporaryPath = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
-        // Записываем рядом с основным файлом, затем заменяем его целиком.
-        // Ошибка записи не должна обрезать уже сохранённые настройки.
+        // Write beside the destination file, then replace it in one operation.
+        // A failed write must not truncate the previously saved settings.
         try
         {
             var options = new JsonSerializerOptions

@@ -1,114 +1,138 @@
 <p align="center">
-  <img src="docs/assets/logo.svg" width="76" alt="ChromaTray logo">
+  <img src="docs/assets/logo.svg" width="80" alt="ChromaTray logo">
 </p>
 <h1 align="center">ChromaTray</h1>
 <p align="center"><strong>Pick a pixel. Find your palette.</strong></p>
-<p align="center">Пипетка и анализатор экранных палитр для Windows — всегда под рукой, в системном трее.</p>
+<p align="center">Exact screen colors and useful region palettes, one shortcut away.</p>
 
 <p align="center">
   <a href="https://github.com/Gh0st3r0k/ChromaTray/actions/workflows/release.yml"><img src="https://github.com/Gh0st3r0k/ChromaTray/actions/workflows/release.yml/badge.svg" alt="Build, test and release"></a>
-  <img src="https://img.shields.io/badge/Windows-10%20%2F%2011-0078D6?style=flat-square" alt="Windows 10 / 11">
-  <img src="https://img.shields.io/badge/.NET-8-512BD4?style=flat-square" alt=".NET 8">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-10B981?style=flat-square" alt="MIT License"></a>
+  <a href="https://github.com/Gh0st3r0k/ChromaTray/actions/workflows/docs.yml"><img src="https://github.com/Gh0st3r0k/ChromaTray/actions/workflows/docs.yml/badge.svg" alt="Documentation"></a>
+  <img src="https://img.shields.io/badge/Windows-10%20%2F%2011-0B2F9F?style=flat-square" alt="Windows 10 and 11">
+  <img src="https://img.shields.io/badge/.NET-8-161D6F?style=flat-square" alt=".NET 8">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-98DED9?style=flat-square" alt="MIT license"></a>
 </p>
 
 <p align="center">
-  <a href="#возможности">Возможности</a> ·
-  <a href="#как-пользоваться">Управление</a> ·
-  <a href="#разработка-и-проверки">Разработка</a> ·
-  <a href="#документация-docfx">Documentation</a> ·
-  <a href="#памятка-как-запустить-у-себя">Запуск у себя</a>
+  <a href="https://gh0st3r0k.github.io/ChromaTray/">Documentation</a> ·
+  <a href="#quick-start">Quick start</a> ·
+  <a href="#controls">Controls</a> ·
+  <a href="docs/DEVELOPMENT.md">Development</a> ·
+  <a href="docs/RUNNING.md">Local setup guide</a>
 </p>
 
-![ChromaTray — выбор цвета и палитры](docs/assets/banner.svg)
+![ChromaTray color picker and palette illustration](docs/assets/banner.svg)
 
-*Иллюстрация возможностей; не скриншот работающего приложения.*
+<p align="center"><sub>Feature illustration; not a screenshot of the running application.</sub></p>
 
-ChromaTray помогает перенести цвет с экрана в код или дизайн. Выберите один пиксель, чтобы скопировать его значение, или выделите область, чтобы получить палитру с долями цветов. Приложение использует Windows Forms, работает локально и не требует аккаунта, API-ключей или серверов.
+ChromaTray is a Windows tray app for bringing screen colors into your code and design work. Pick one pixel to copy its value, or select a rectangle to discover its most frequent colors and their shares. Everything runs locally, without an account, API key, or backend service.
 
-## Возможности
+## Features
 
-| | Что делает ChromaTray |
+| | What you get |
 | --- | --- |
-| **Точная пипетка** | Лупа с сеткой 11 × 11 пикселей, прицелом, HEX/RGB и координатами. Стрелки сдвигают выбор на один пиксель, Enter подтверждает. Выбранный цвет автоматически копируется в основном формате. |
-| **Палитра области** | Выделение прямоугольника мышью, подсчёт цветов, сортировка по частоте и процент площади каждого цвета. |
-| **Группировка оттенков** | Объединение близких оттенков по ячейкам RGB с шагом 8; каждая группа показывает самый частый реальный цвет. Отключите для точного подсчёта. |
-| **Пять форматов** | HEX, RGB, HSL, HSV и CMYK. В настройках можно оставить от одного до пяти форматов. |
-| **Экспорт** | Значения выбранного цвета или палитра целиком: текст, список основного формата, CSS-переменные и JSON. |
-| **Глобальные хоткеи** | Комбинации для двух режимов захвата; занятые сочетания отмечаются в строке состояния. |
-| **Работа из трея** | Закрытие окна скрывает панель. Захват остаётся доступен через хоткеи и меню иконки. |
-| **Несколько мониторов** | Снимок виртуального рабочего стола и Per-Monitor V2 DPI awareness. |
+| **Precise point picking** | An 11 × 11 magnifier, screen coordinates, one clear cursor, and arrow-key adjustments in physical pixels. |
+| **Region palettes** | Frequency-sorted colors, pixel counts, and percentages from a rectangular selection. |
+| **Original RGB values** | Uncompressed screen capture with exact colors by default. Optional shade grouping uses a real sampled color for each group. |
+| **Five color formats** | HEX, RGB, HSL, HSV, and CMYK, with individual copy buttons and configurable active formats. |
+| **Ready-to-use exports** | Copy active representations, a primary-format list, CSS custom properties, or JSON. |
+| **Tray workflow** | Configurable global shortcuts, a tray menu, and capture while the dashboard is hidden. |
+| **Multiple displays** | Physical screen coordinates, negative monitor positions, and Per-Monitor V2 DPI awareness. |
+| **A consistent theme** | Navy, blue, aqua, and mint: `#161D6F` · `#0B2F9F` · `#98DED9` · `#C7FFD8`. |
 
-## Оформление
+## Quick start
 
-Тема основана на четырёх цветах: **`#161D6F` · `#0B2F9F` · `#98DED9` · `#C7FFD8`**. Таблица палитры, ползунки прокрутки, поле экспорта и само раскрывающееся меню рисуются в этой теме. В шапке и инспекторе размеры пересчитываются при изменении DPI; на небольшом окне область форматов прокручивается, а кнопка копирования остаётся закреплённой.
+### Run from source
 
-## Как пользоваться
+Use **Windows 10/11 x64** with the **.NET 8 SDK, version 8.0.4xx**. The SDK feature band is pinned in [global.json](global.json).
 
-| Действие | Управление |
+```powershell
+git clone https://github.com/Gh0st3r0k/ChromaTray.git
+cd ChromaTray
+dotnet restore ChromaTray.csproj --locked-mode
+dotnet run --project ChromaTray.csproj -c Release --no-restore
+```
+
+Press **Ctrl+Shift+X**, point at a color, adjust with the arrow keys, then press **Enter**. The primary color value is copied to your clipboard. Use **Ctrl+Shift+Z** and drag a rectangle to extract a palette.
+
+### Use a published executable
+
+Tagged releases publish these assets on the [Releases page](https://github.com/Gh0st3r0k/ChromaTray/releases):
+
+| Asset | Requirement |
 | --- | --- |
-| Открыть пипетку | **Ctrl + Shift + X** или **Pick Point** |
-| Поправить точку на один пиксель | **← ↑ ↓ →**; удерживайте для повторения |
-| Подтвердить выбранный пиксель | **Enter** или левый щелчок |
-| Извлечь палитру | **Ctrl + Shift + Z** или **Scan Region**; протяните прямоугольник |
-| Отменить захват | **Esc** или правая кнопка мыши |
-| Скопировать основной формат | Двойной щелчок по строке палитры или **Ctrl + C** |
-| Скопировать конкретное значение | **Copy** справа от нужного формата |
-| Экспортировать палитру | Выберите формат под таблицей → **Copy palette** |
-| Изменить хоткеи и форматы | **Settings** |
-| Вернуть панель | Левый щелчок по иконке в трее |
-| Завершить программу | Правый щелчок по иконке → **Exit** |
+| `ChromaTray-win-x64-standalone.exe` | Includes .NET; no separate runtime installation. |
+| `ChromaTray-win-x64-lightweight.exe` | Requires the **x64 .NET 8 Desktop Runtime**. |
+| `SHA256SUMS.txt` | SHA-256 checksums for the executables. |
 
-Перед захватом приложение закрывает свои меню, скрывает окно без анимации и дожидается обновления кадра DWM. На поддерживаемых версиях Windows окно также временно исключается из захвата. Затем захват работает по **снимку экрана в момент открытия режима**: изображение заморожено, а лупа следует за указателем. В Pick Point снимок показывается без цветового затемнения, а прицел — один системный курсор с жирным контуром. После отмены приложение возвращается к прежней видимости. Интерфейс — на английском.
+See the [local setup guide](docs/RUNNING.md) for Visual Studio, publishing your own EXE, settings recovery, and troubleshooting.
 
-Стрелки перемещают прицел и системный указатель на **один физический пиксель**. На границе экрана движение останавливается; в промежутки между мониторами попасть нельзя. У смежных экранов можно перейти через общую границу. Мышь и клавиатуру можно чередовать.
+## Controls
 
-Компактная таблица показывает основной формат, полосу доли и число пикселей. Все включённые форматы выбранного цвета находятся в инспекторе справа; экспорт учитывает их все.
+| Action | Shortcut or control |
+| --- | --- |
+| Pick a screen pixel | **Ctrl+Shift+X** or **Pick Point** |
+| Move the point by one physical pixel | **← ↑ ↓ →**; hold a key to repeat |
+| Confirm the point | **Enter** or left click |
+| Extract a region palette | **Ctrl+Shift+Z** or **Scan Region**, then drag |
+| Cancel a capture | **Esc** or right click |
+| Copy a palette row in the primary format | Double click or **Ctrl+C** |
+| Copy one representation | **Copy** beside its value |
+| Export the entire palette | Choose an export mode → **Copy palette** |
+| Change shortcuts and enabled formats | **Settings** |
+| Restore the dashboard | Left click the tray icon |
+| Exit completely | Tray menu → **Exit** |
 
-Основной формат — первый включённый в порядке **HEX → RGB → HSL → HSV → CMYK**. Например, отключите HEX, чтобы пипетка автоматически копировала RGB. Хоткей записывается нажатием комбинации в поле настроек; F1–F11 можно использовать без модификаторов, F12 зарезервирован Windows.
+Closing the dashboard keeps ChromaTray in the tray. On narrow windows, **Palette** and **Inspector** become tabs. The desktop interface is in English.
 
-### Примеры экспорта
+The primary format is the first enabled format in this order: **HEX → RGB → HSL → HSV → CMYK**. Disable HEX if you want quick copy to use RGB. At least one format must stay enabled.
 
-CSS-переменные:
+## Color accuracy
+
+Capture freezes the desktop after hiding the application. Point mode displays the untinted snapshot; the magnifier enlarges individual pixels without interpolation. Arrow keys stop at display edges and cannot enter empty gaps between monitors; you can cross a shared edge between adjacent displays.
+
+Screen pixels stay in an **uncompressed 32-bit bitmap**. Capture and analysis do not use JPEG, lossy compression, or resizing. Saved test previews use PNG.
+
+**Group similar shades** is off by default. Find it on its own row below the palette heading, or in **Settings → Group similar shades (region only)**. When enabled, RGB channels are grouped in steps of eight and each group displays its most frequent original color. Point picking always returns the exact sampled pixel.
+
+The palette contains up to **500 entries**. Percentages use the complete region before that limit, so visible shares may total less than 100%. ClearType and other antialiasing shades are included because they are already present in the captured screen image.
+
+HDR, display color profiles, protected content, and the Windows secure desktop can affect capture results. CMYK is a mathematical RGB conversion without a print ICC profile. ChromaTray reads captured desktop pixels; it does not recover the underlying CSS or design-source colors.
+
+## Export examples
+
+CSS custom properties with HEX as the primary format:
 
 ```css
 :root {
-  --color-1: #3B82F6;
-  --color-2: #10B981;
+  --color-1: #98DED9;
+  --color-2: #C7FFD8;
 }
 ```
 
-JSON с включёнными HEX и HSL:
+JSON with HEX enabled:
 
 ```json
 [
-  { "hex": "#3B82F6", "hsl": "hsl(217deg, 91%, 60%)", "sharePercent": 75.00 },
-  { "hex": "#10B981", "hsl": "hsl(160deg, 84%, 39%)", "sharePercent": 25.00 }
+  { "hex": "#98DED9", "sharePercent": 75.00 },
+  { "hex": "#C7FFD8", "sharePercent": 25.00 }
 ]
 ```
 
-При основном HSV или CMYK CSS-экспорт использует HEX: `hsv()` и `cmyk()` не являются обычными CSS-функциями цвета. В текстовом и JSON-экспорте выбранные форматы сохраняются.
+Text and JSON preserve the selected formats. CSS export falls back to HEX when HSV or CMYK is primary. Percentages use a decimal point regardless of the Windows locale.
 
-### Как считается палитра
+## Documentation
 
-Анализатор читает строки bitmap через `LockBits`, считает частоты RGB и выполняет анализ в фоновом потоке. Переключение группировки пересчитывает последнюю захваченную область.
+Browse the published guides in [English](https://gh0st3r0k.github.io/ChromaTray/), [Slovak](https://gh0st3r0k.github.io/ChromaTray/sk/), [Czech](https://gh0st3r0k.github.io/ChromaTray/cs/), [Russian](https://gh0st3r0k.github.io/ChromaTray/ru/), or [Ukrainian](https://gh0st3r0k.github.io/ChromaTray/uk/). The language selector keeps the current page, and each version has its own Unicode-aware search index. API descriptions are generated from English C# XML comments.
 
-Захват хранится в памяти как несжатый 32-битный bitmap: JPEG, сжатие с потерями и изменение размера не используются. Сохраняемые превью тестов используют PNG. По умолчанию группировка выключена, поэтому анализ сохраняет точные RGB пикселей. Если вы обновились со старой версии, снимите сохранённую галочку **Group similar shades**, чтобы видеть каждый исходный оттенок отдельно. Оттенки сглаживания текста и границ, уже присутствующие на экране, также входят в палитру.
+| File | Purpose |
+| --- | --- |
+| [Running locally](docs/RUNNING.md) | Install prerequisites, run the app, publish executables, and resolve common issues. |
+| [Development guide](docs/DEVELOPMENT.md) | Understand the code, capture lifecycle, tests, documentation builds, and release workflow. |
+| [Windows checklist](docs/WINDOWS-CHECKLIST.md) | Verify real desktop capture, mixed DPI, keyboard navigation, and appearance before a release. |
+| [DocFX source](docs/site/index.md) | Read the site content directly in the repository. |
 
-**Где переключатель:** откройте **Palette** — галочка **Group similar shades** расположена отдельной строкой под заголовком палитры. Эта же настройка доступна через **Settings → Group similar shades (region only)**. Она влияет только на палитру области, а пипетка точки всегда возвращает исходный RGB.
-
-**Почему у букв есть цветные края:** ClearType сглаживает текст с помощью красных, зелёных и синих субпикселей. Поэтому даже у белых букв на чёрном фоне есть цветные переходные пиксели. Лупа показывает каждый исходный пиксель отдельным квадратом без интерполяции. PNG сохраняет эти переходы, поскольку они уже нарисованы на экране. Восстановить из них исходный цвет текста однозначно нельзя. Для определения основного цвета выбирайте пипеткой середину толстого штриха, подальше от края.
-
-- Панель и экспорт содержат **до 500 самых частых цветов**. Общее число найденных цветов показано внизу окна.
-- Процент считается от **всех пикселей области**, даже если часть цветов не попала в первые 500. Поэтому сумма показанных долей может быть меньше 100%.
-- В режиме группировки показывается число групп. HEX/RGB каждой группы соответствует самому частому исходному цвету в ней (при равной частоте — меньшему RGB), а количество пикселей и доля суммируются по всем оттенкам группы. Округлённые центры ячеек не выводятся как цвета.
-- CMYK рассчитан математически из RGB, без цветового профиля печати. HDR, ICC-профили и защищённое видео могут давать результаты, отличающиеся от ожидаемых.
-
-## Документация DocFX
-
-Сайт содержит руководства на **английском, словацком, чешском, русском и украинском**. Переключатель языка сохраняет открытую страницу; поиск работает отдельно для каждого языка. Описания API формируются из английских XML-комментариев C#. [Workflow Documentation](https://github.com/Gh0st3r0k/ChromaTray/actions/workflows/docs.yml) пересобирает все языки и сохраняет готовый сайт в артефакте `documentation-site`.
-
-Для сборки сайта нужны .NET 8 SDK и Python 3:
+To build every documentation language, install **.NET 8 SDK** and **Python 3**, then run from the repository root:
 
 ```powershell
 dotnet tool restore
@@ -117,118 +141,34 @@ python scripts/build-docs.py
 dotnet docfx serve artifacts/docs-site --port 8080
 ```
 
-Откройте `http://localhost:8080` (русская версия — `/ru/`). На Linux/macOS при необходимости используйте `python3`. Разовая настройка публикации GitHub Pages описана в [Development](docs/site/development.md#automatic-updates). Исходники сайта — в `docs/site`; переводы — в `docs/site/locales`; генерируемые HTML и API-метаданные в Git не сохраняются.
+Open `http://localhost:8080`. On Linux/macOS, use `python3` if needed. Generated HTML and API metadata are excluded from Git. The [development guide](docs/DEVELOPMENT.md#documentation) explains editing and publishing the site.
 
-## Разработка и проверки
+## Build and test
 
-**Приложение и полный набор тестов запускаются на Windows.** На Linux/macOS доступны тесты алгоритмов; Linux также может собрать Windows-приложение с включённым `EnableWindowsTargeting`.
+The application and full test suite require a Windows desktop. Shared algorithm tests also run on Linux and macOS.
 
 ```powershell
-# Из корня проекта на Windows
-
+# Full Windows suite; also builds the application.
 dotnet restore ChromaTray.Tests/ChromaTray.Tests.csproj --locked-mode
-
-dotnet build ChromaTray.csproj -c Release --no-restore
-
 dotnet test ChromaTray.Tests/ChromaTray.Tests.csproj -c Release --no-restore
-```
 
-Проверки без Windows Desktop:
-
-```sh
+# Cross-platform color, histogram, navigation, and export tests.
 dotnet restore ChromaTray.Core.Tests/ChromaTray.Core.Tests.csproj --locked-mode
 dotnet test ChromaTray.Core.Tests/ChromaTray.Core.Tests.csproj -c Release --no-restore
 ```
 
-Тесты ядра компилируют те же исходники цветовых расчётов, гистограммы, навигации по пикселям и экспортера, которые использует приложение. Windows-набор дополнительно проверяет bitmap, настройки и маски хоткеев; диагностические сообщения содержат идентификаторы `CT-COLOR`, `CT-SCAN`, `CT-EXP`, `CT-VAL`, `CT-CFG` и `CT-WIN32`.
+GitHub Actions runs Linux algorithm tests and Windows regression tests. Version tags matching `v*.*.*` additionally publish the two executables and checksums after both jobs pass. See [development and release instructions](docs/DEVELOPMENT.md).
 
-Для проверки интерфейса, захвата и регистрации хоткеев используйте [ручной чек-лист Windows](docs/WINDOWS-CHECKLIST.md). Автотесты масок хоткеев не подтверждают фактическую регистрацию сочетаний в системе.
+## License
 
-<details>
-<summary><strong>Структура проекта</strong></summary>
+[MIT](LICENSE) · Kostiantyn Zaitsev
 
-```text
-ChromaTray/
-├── ChromaTray.csproj            # Windows Forms, .NET 8
-├── Program.cs                  # Запуск и защита от второго экземпляра
-├── Models/                     # Цветовые форматы и JSON-настройки
-├── Services/                   # Анализ bitmap, экспорт, валидация, Win32
-├── Forms/                      # Панель, настройки и экранный оверлей
-├── ChromaTray.Tests/           # Полный Windows-набор xUnit
-├── ChromaTray.Core.Tests/      # Проверки алгоритмов без Windows
-├── assets/                     # Иконка исполняемого файла
-├── docs/                       # Руководство и ручные проверки
-├── scripts/                    # Подготовка облачной Linux-среды
-└── .github/workflows/           # CI и публикация по тегам
-```
+## Run it on your own PC
 
-</details>
+1. Install the **.NET 8 SDK, 8.0.4xx**, on Windows 10/11 x64.
+2. Download or clone the repository and open PowerShell beside `ChromaTray.csproj`.
+3. Run `dotnet restore ChromaTray.csproj --locked-mode`.
+4. Run `dotnet run --project ChromaTray.csproj -c Release --no-restore`.
+5. Use **Ctrl+Shift+X** for a pixel and **Ctrl+Shift+Z** for a region. Choose **Exit** from the tray menu when finished.
 
-### CI и релизы
-
-На push и pull request в `main` GitHub Actions выполняет тесты ядра в Linux и полный набор в Windows. Результаты сохраняются как TRX-артефакты. Windows-тесты также проверяют маршрутизацию стрелок/Enter, связь таблицы с инспектором и расположение основных элементов при двух размерах окна. В артефакте `windows-ui-preview` сохраняются PNG главного окна, настроек и пипетки на тестовом изображении; это не захват рабочего стола пользователя. На тег `v1.0.0` и аналогичные, после успешных проверок, workflow публикует:
-
-| Файл | Для кого |
-| --- | --- |
-| `ChromaTray-win-x64-standalone.exe` | Автономный вариант со встроенным .NET |
-| `ChromaTray-win-x64-lightweight.exe` | Для компьютера с установленным **.NET 8 Desktop Runtime x64** |
-| `SHA256SUMS.txt` | Контрольные суммы исполняемых файлов |
-
-Релиз появится после загрузки исходников и успешного запуска workflow по тегу. Добавленный workflow сам по себе ещё не означает, что проверка в GitHub прошла или релиз опубликован.
-
-## Настройки и данные
-
-Настройки хранятся в `%LocalAppData%\ChromaTray\settings.json`. Запись выполняется через временный файл с последующей заменой. Повреждённые данные восстанавливаются до допустимых значений; ошибки записи показываются пользователю.
-
-Палитра и снимок последней области остаются в памяти текущего сеанса. Приложение не отправляет снимки экрана или выбранные цвета в сеть.
-
-## Автор и лицензия
-
-**Kostiantyn Zaitsev** · [@Gh0st3r0k](https://github.com/Gh0st3r0k) · [Сайт](https://gh0st3r0k.github.io/my-website)
-
-Проект распространяется по [лицензии MIT](LICENSE).
-
----
-
-## Памятка: как запустить у себя
-
-### Вариант 1 — готовый EXE
-
-1. Нужна **Windows 10/11 x64**.
-2. Возьмите `ChromaTray-win-x64-standalone.exe` из результатов сборки или из [Releases](https://github.com/Gh0st3r0k/ChromaTray/releases), когда релиз будет опубликован.
-3. Сохраните файл в удобную папку и запустите двойным щелчком. Отдельно устанавливать .NET для этой версии не нужно.
-4. Нажмите **Ctrl + Shift + X**, наведите лупу, поправьте выбор стрелками и нажмите **Enter**. Значение попадёт в буфер обмена.
-5. Закрытие окна оставляет приложение в трее. Для полного выхода выберите **Exit** в меню иконки.
-
-### Вариант 2 — из исходников
-
-Установите **[.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)** версии **8.0.400 или новее в ветке 8.0.4xx**. SDK нужен именно для сборки; одного Runtime недостаточно. Visual Studio необязательна.
-
-Если у вас уже есть папка с файлами проекта, откройте в ней PowerShell. После публикации исходников на GitHub их также можно получить так:
-
-```powershell
-git clone https://github.com/Gh0st3r0k/ChromaTray.git
-cd ChromaTray
-```
-
-Затем выполните:
-
-```powershell
-dotnet --version
-dotnet restore ChromaTray.csproj --locked-mode
-dotnet run --project ChromaTray.csproj -c Release --no-restore
-```
-
-Откроется панель ChromaTray. Попробуйте **Pick Point**, затем **Scan Region**. Для запуска во время разработки снова используйте последнюю команду.
-
-### Собрать свой автономный EXE
-
-Из той же папки в PowerShell:
-
-```powershell
-dotnet publish ChromaTray.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None -p:DebugSymbols=false -o artifacts/standalone
-```
-
-Готовый файл: **`artifacts\standalone\ChromaTray.exe`**. Его можно перенести на другой Windows x64 компьютер. При первом запуске часть встроенных библиотек распаковывается во временную папку пользователя.
-
-Если команда не работает, нужен запуск через Visual Studio или хотите проверить контрольную сумму — откройте **[подробную инструкцию на русском](docs/RUNNING.ru.md)**.
+For detailed setup, troubleshooting, and settings recovery, follow [Running ChromaTray locally](docs/RUNNING.md).

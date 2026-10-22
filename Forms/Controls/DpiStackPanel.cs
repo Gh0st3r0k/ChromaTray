@@ -1,7 +1,7 @@
 namespace ChromaTray.Forms.Controls;
 
-// Исходные размеры не изменяются при масштабировании. Это предотвращает
-// повторное увеличение размеров контролов, созданных после смены DPI.
+// Keep the original dimensions unchanged during scaling. This prevents
+// controls created after a DPI change from being scaled twice.
 /// <summary>
 /// A vertical layout that retains design dimensions and reapplies the current window DPI.
 /// </summary>

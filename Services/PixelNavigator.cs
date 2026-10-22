@@ -7,8 +7,8 @@ namespace ChromaTray.Services;
 /// </summary>
 internal static class PixelNavigator
 {
-    // Координаты мониторов могут быть отрицательными. Если следующий пиксель
-    // не относится ни к одному дисплею, оставляем выбор на месте.
+    // Monitor coordinates may be negative. If the next pixel is outside
+    // every display, leave the selection in place.
     public static Point Move(Point current, int dx, int dy, IReadOnlyList<Rectangle> displays)
     {
         if (Math.Abs(dx) + Math.Abs(dy) != 1)

@@ -12,7 +12,7 @@ internal static class Program
     {
         ApplicationConfiguration.Initialize();
 
-        // Иначе два экземпляра конфликтовали бы за глобальные хоткеи и значки трея.
+        // Multiple instances would compete for global hotkeys and create duplicate tray icons.
         using var mutex = new Mutex(true, "ChromaTray_SingleInstance_Mutex", out bool createdNew);
         if (!createdNew)
         {

@@ -4,7 +4,7 @@ using ChromaTray.Services;
 
 namespace ChromaTray.Forms;
 
-// Выбор цвета, пересчёт группировки, обновление инспектора и копирование.
+// Color selection, regrouping, inspector updates, and clipboard operations.
 public partial class MainDashboardForm
 {
     private readonly Dictionary<ColorFormat, TextBox> _formatTextBoxes = new();

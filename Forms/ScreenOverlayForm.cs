@@ -15,7 +15,7 @@ public partial class ScreenOverlayForm : Form
 
     private readonly CaptureMode _mode;
     private readonly Bitmap _screenSnapshot;
-    // Границы всех мониторов в экранных координатах; позиции внутри Bitmap отсчитываются от их левого верхнего угла.
+    // Monitor bounds use screen coordinates; Bitmap positions are relative to their upper-left corner.
     private readonly Rectangle _virtualBounds;
     private readonly Rectangle[] _displayBounds;
     private readonly Action<Point> _moveCursor;
@@ -56,8 +56,8 @@ public partial class ScreenOverlayForm : Form
     {
     }
 
-    // Форма получает Bitmap во владение. Тесты передают искусственный снимок,
-    // чтобы проверять клавиатуру и рисование без захвата рабочего стола пользователя.
+    // The form takes ownership of the Bitmap. Tests provide a synthetic snapshot
+    // to check keyboard input and painting without capturing the user's desktop.
     internal ScreenOverlayForm(CaptureMode mode, Bitmap snapshot, Rectangle virtualBounds,
         Rectangle[] displayBounds, Action<Point>? moveCursor = null, Point? initialScreenPosition = null)
     {
@@ -72,7 +72,7 @@ public partial class ScreenOverlayForm : Form
             start = displayBounds[0].Location;
         }
         _cursorPosition = new Point(start.X - virtualBounds.X, start.Y - virtualBounds.Y);
-        // Координаты снимка — физические пиксели. Автомасштабирование изменило бы позицию выбора.
+        // Snapshot coordinates are physical pixels. Automatic scaling would move the selected point.
         AutoScaleMode = AutoScaleMode.None;
         FormBorderStyle = FormBorderStyle.None;
         StartPosition = FormStartPosition.Manual;
@@ -94,7 +94,7 @@ public partial class ScreenOverlayForm : Form
     private static (Bitmap, Rectangle, Rectangle[]) CaptureDesktop()
     {
         var bounds = SystemInformation.VirtualScreen;
-        // Несжатый Bitmap сохраняет исходные RGB: здесь нет JPEG, масштабирования или фильтрации.
+        // An uncompressed Bitmap preserves original RGB values: no JPEG, resizing, or filtering.
         var bitmap = new Bitmap(bounds.Width, bounds.Height, PixelFormat.Format32bppArgb);
         try
         {
@@ -109,8 +109,8 @@ public partial class ScreenOverlayForm : Form
         }
     }
 
-    // WinForms считает стрелки и Enter клавишами навигации. Перехватываем их
-    // до переключения фокуса, иначе KeyDown может не получить нажатие.
+    // WinForms treats arrows and Enter as navigation keys. Intercept them
+    // before focus navigation, which might otherwise prevent KeyDown from receiving them.
     protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
     {
         var key = keyData & Keys.KeyCode;

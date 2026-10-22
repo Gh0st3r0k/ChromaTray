@@ -37,8 +37,8 @@ internal sealed class StudioButton : Button
     public StudioButton()
     {
         SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw | ControlStyles.SupportsTransparentBackColor, true);
-        // ButtonBase ожидает непрозрачный прямоугольник. Для скруглений нужно сначала
-        // нарисовать фон родителя, иначе в углах останутся посторонние цвета.
+        // ButtonBase assumes an opaque rectangle. Rounded corners must first
+        // paint the parent background so unrelated colors do not remain in the corners.
         SetStyle(ControlStyles.Opaque, false);
         FlatStyle = FlatStyle.Flat;
         FlatAppearance.BorderSize = 0;

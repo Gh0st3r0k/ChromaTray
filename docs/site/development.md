@@ -22,6 +22,8 @@ Capture uses physical screen coordinates, which can be negative on secondary mon
 
 The overlay owns its snapshot and cropped bitmap. The dashboard clones a captured region for later analysis; each background analysis receives another owned snapshot. A request version prevents an older analysis from overwriting a newer selection.
 
+For the complete capture lifecycle, bitmap ownership rules, settings behavior, layout constraints, and release instructions, read the [repository development guide](https://github.com/Gh0st3r0k/ChromaTray/blob/main/docs/DEVELOPMENT.md). Ordinary source comments and repository guides are written in English; translated DocFX guides retain their own languages.
+
 ## Build and test
 
 ```powershell
@@ -52,6 +54,8 @@ Open `http://localhost:8080`. API metadata and HTML are generated outputs and ar
 On Linux/macOS, use `python3` if `python` is unavailable. English remains at the site root; translations use `/sk/`, `/cs/`, `/ru/`, and `/uk/`. Each language has its own search index. Edit translated guides in `docs/site/locales/<language>` and interface strings in that folder's `template/token.json`. The shared template adds the page-preserving language selector. API descriptions remain generated from English XML comments so that they stay synchronized with code.
 
 Update `/// <summary>`, `<param>`, and `<returns>` comments in the C# source to update API descriptions. Ordinary `//` implementation comments remain in the source. The API reference shows the project's public types and members; this page also explains the internal components.
+
+Use the [Windows checklist](https://github.com/Gh0st3r0k/ChromaTray/blob/main/docs/WINDOWS-CHECKLIST.md) to verify capture on real displays before releasing. CI uploads test reports and Windows preview PNGs; it does not replace checks of desktop composition and display configuration.
 
 ## Automatic updates
 

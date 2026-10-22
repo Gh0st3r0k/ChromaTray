@@ -11,7 +11,7 @@ internal static class StudioTheme
     private const int ImmersiveDarkModeAttribute = 20;
     private const int WindowCornerPreferenceAttribute = 33;
 
-    // Базовая палитра интерфейса: #161D6F / #0B2F9F / #98DED9 / #C7FFD8.
+    // Base interface palette: #161D6F / #0B2F9F / #98DED9 / #C7FFD8.
     public static readonly Color Canvas = Color.FromArgb(22, 29, 111);
     public static readonly Color Surface = Color.FromArgb(25, 40, 121);
     public static readonly Color Raised = Color.FromArgb(11, 47, 159);
@@ -21,7 +21,7 @@ internal static class StudioTheme
     public static readonly Color Accent = Color.FromArgb(152, 222, 217);
     public static readonly Color Mint = Color.FromArgb(199, 255, 216);
     public static readonly Color Danger = Color.FromArgb(255, 184, 184);
-    // Общие шрифты живут всё время работы приложения; отдельный контрол не должен их освобождать.
+    // Shared fonts live for the application's lifetime; individual controls must not dispose them.
     public static readonly Font Body = new("Segoe UI", 10f);
     public static readonly Font Small = new("Segoe UI", 9f);
     public static readonly Font Strong = new("Segoe UI Semibold", 10f);
@@ -30,8 +30,8 @@ internal static class StudioTheme
     public static readonly Font Mono = new("Consolas", 10f);
     public static readonly Font MonoLarge = new("Consolas", 24f, FontStyle.Bold);
 
-    // Во время смены DPI вложенный контрол может ещё хранить старый масштаб.
-    // Рисование и компоновка должны брать один актуальный DPI у окна.
+    // A child control may still report its previous scale during a DPI change.
+    // Use the window's current DPI consistently for both painting and layout.
     public static int Dpi(Control control) => control.FindForm()?.DeviceDpi ?? control.DeviceDpi;
 
     public static GraphicsPath Round(RectangleF rect, float radius = 12)
@@ -63,7 +63,7 @@ internal static class StudioTheme
         Margin = Padding.Empty
     };
 
-    // Height >= 0 задаёт фиксированную логическую высоту, -1 отдаёт строке оставшееся место.
+    // Height >= 0 specifies a fixed logical height; -1 gives the row the remaining space.
     public static DpiStackPanel Stack(params (Control Control, int Height)[] rows)
     {
         var stack = new DpiStackPanel(rows.Select(row => row.Height).ToArray())

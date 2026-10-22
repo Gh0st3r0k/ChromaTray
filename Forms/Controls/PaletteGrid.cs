@@ -4,7 +4,7 @@ using ChromaTray.Services;
 
 namespace ChromaTray.Forms.Controls;
 
-// Рисуем строки и прокрутку самостоятельно, чтобы Windows не добавляла белую рамку ListView.
+// Draw rows and scrolling ourselves so Windows does not add a white ListView border.
 /// <summary>
 /// A palette table with themed scrolling that paints only visible rows instead of creating a control for every color.
 /// </summary>
@@ -121,7 +121,7 @@ internal sealed class PaletteGrid : Control
 
     protected override void OnMouseWheel(MouseEventArgs e)
     {
-        // На плавной мыши Delta бывает меньше одного шага; сохраняем остаток между событиями.
+        // High-resolution wheels may report less than one step; carry the remainder across events.
         _wheelDelta += e.Delta;
         int ticks = _wheelDelta / SystemInformation.MouseWheelScrollDelta;
         _wheelDelta %= SystemInformation.MouseWheelScrollDelta;
@@ -240,7 +240,7 @@ internal sealed class PaletteGrid : Control
         graphics.DrawLine(divider, 0, HeaderHeight - 1, width, HeaderHeight - 1);
         var state = graphics.Save();
         graphics.SetClip(new Rectangle(0, HeaderHeight, Math.Max(0, width), Math.Max(0, Height - HeaderHeight)));
-        // Вычисляем диапазон видимых строк вместо перерисовки всей палитры.
+        // Calculate the visible row range instead of repainting the entire palette.
         int start = _scrollBar.Value / RowHeight;
         int end = Math.Min(_colors.Count, start + (Height - HeaderHeight) / RowHeight + 2);
         for (int i = start; i < end; i++)
