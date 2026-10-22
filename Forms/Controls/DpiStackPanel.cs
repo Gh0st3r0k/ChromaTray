@@ -16,6 +16,10 @@ internal sealed class DpiStackPanel(int[] rowHeights) : TableLayoutPanel
         get => _logicalPadding;
         set
         {
+            if (_logicalPadding == value)
+            {
+                return;
+            }
             _logicalPadding = value;
             PerformLayout();
         }

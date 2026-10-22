@@ -20,6 +20,7 @@ public partial class MainDashboardForm : Form
     private readonly ToolStripMenuItem _trayRegionItem = new();
 
     private bool _isExiting;
+    private bool _hasInitializedWindow;
     private bool _isSettingsDialogOpen;
     private readonly Icon _appIcon;
     private readonly ToolTip _toolTips = new();
@@ -90,6 +91,12 @@ public partial class MainDashboardForm : Form
     protected override void OnShown(EventArgs e)
     {
         base.OnShown(e);
+        // Reopening from the tray must reuse the existing controls and palette.
+        if (_hasInitializedWindow)
+        {
+            return;
+        }
+        _hasInitializedWindow = true;
         int Scale(int value) => (int)Math.Round(value * DeviceDpi / 96f);
         var area = Screen.FromControl(this).WorkingArea;
         MinimumSize = new Size(Math.Min(Scale(980), area.Width), Math.Min(Scale(660), area.Height));
@@ -218,7 +225,10 @@ public partial class MainDashboardForm : Form
     private void ShowMainWindow()
     {
         Show();
-        WindowState = FormWindowState.Normal;
+        if (WindowState == FormWindowState.Minimized)
+        {
+            WindowState = FormWindowState.Normal;
+        }
         Activate();
     }
 

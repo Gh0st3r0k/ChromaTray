@@ -9,6 +9,31 @@ namespace ChromaTray.Tests;
 public class FormConstructionTests
 {
     [Fact]
+    public void Dashboard_ReopeningReusesFormatControlsAndPreservesMaximizedState()
+    {
+        OverlayKeyboardTests.OnSta(() =>
+        {
+            using var dashboard = new MainDashboardForm(new AppSettings());
+            dashboard.Show();
+            System.Windows.Forms.Application.DoEvents();
+            var formats = dashboard.Controls.Find("ColorFormats", true).Single();
+            var rows = formats.Controls.Cast<System.Windows.Forms.Control>().ToArray();
+            var reopen = typeof(MainDashboardForm).GetMethod("ShowMainWindow",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+            dashboard.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+            for (int i = 0; i < 3; i++)
+            {
+                dashboard.Hide();
+                reopen.Invoke(dashboard, null);
+                System.Windows.Forms.Application.DoEvents();
+                Assert.Equal(System.Windows.Forms.FormWindowState.Maximized, dashboard.WindowState);
+                Assert.Equal(rows, formats.Controls.Cast<System.Windows.Forms.Control>().ToArray());
+                Assert.All(rows, row => Assert.False(row.IsDisposed));
+            }
+        });
+    }
+
+    [Fact]
     public void DashboardAndSettings_CanCreateWindowsHandlesAndDispose()
     {
         Exception? failure = null;

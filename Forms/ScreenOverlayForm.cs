@@ -79,13 +79,11 @@ public partial class ScreenOverlayForm : Form
         Bounds = virtualBounds;
         TopMost = true;
         DoubleBuffered = true;
-        if (mode == CaptureMode.Point)
-        {
-            using var stream = typeof(ScreenOverlayForm).Assembly.GetManifestResourceStream("ChromaTray.Picker.cur")
-                ?? throw new InvalidOperationException("The point picker cursor resource is missing.");
-            _pickerCursor = new Cursor(stream);
-        }
-        Cursor = _pickerCursor ?? Cursors.Cross;
+        // Use the same white crosshair for both point and region selection.
+        using var stream = typeof(ScreenOverlayForm).Assembly.GetManifestResourceStream("ChromaTray.Picker.cur")
+            ?? throw new InvalidOperationException("The picker cursor resource is missing.");
+        _pickerCursor = new Cursor(stream);
+        Cursor = _pickerCursor;
         KeyPreview = true;
         ShowInTaskbar = false;
         AccessibleName = mode == CaptureMode.Point ? "Point picker. Arrow keys move one pixel. Enter selects. Escape cancels." : "Region picker. Drag to select. Escape cancels.";

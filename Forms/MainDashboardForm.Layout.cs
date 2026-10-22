@@ -377,31 +377,47 @@ public partial class MainDashboardForm
     // All dimensions below are logical units at 96 DPI; DpiStackPanel scales them.
     private void ApplyResponsiveLayout()
     {
-        bool compact = ClientSize.Height * 96.0 / DeviceDpi < 760;
-        _dashboardLayout.SetRowHeight(0, compact ? 56 : 80);
-        _dashboardLayout.SetRowHeight(1, compact ? 64 : 100);
-        _dashboardLayout.SetRowHeight(2, compact ? 8 : 20);
-        _dashboardLayout.SetRowHeight(4, compact ? 24 : 40);
-        _dashboardLayout.LogicalPadding = new Padding(24, compact ? 12 : 16, 24, compact ? 4 : 8);
-        _wordmark.SetRowHeight(1, compact ? 0 : 24);
-        var subtitle = _wordmark.GetControlFromPosition(0, 1);
-        if (subtitle is not null)
+        // Apply row changes as one layout pass instead of relaying out the entire
+        // nested control tree after each assignment.
+        _dashboardLayout.SuspendLayout();
+        _wordmark.SuspendLayout();
+        _paletteLayout.SuspendLayout();
+        _paletteHeader.SuspendLayout();
+        try
         {
-            subtitle.Visible = !compact;
-        }
+            bool compact = ClientSize.Height * 96.0 / DeviceDpi < 760;
+            _dashboardLayout.SetRowHeight(0, compact ? 56 : 80);
+            _dashboardLayout.SetRowHeight(1, compact ? 64 : 100);
+            _dashboardLayout.SetRowHeight(2, compact ? 8 : 20);
+            _dashboardLayout.SetRowHeight(4, compact ? 24 : 40);
+            _dashboardLayout.LogicalPadding = new Padding(24, compact ? 12 : 16, 24, compact ? 4 : 8);
+            _wordmark.SetRowHeight(1, compact ? 0 : 24);
+            var subtitle = _wordmark.GetControlFromPosition(0, 1);
+            if (subtitle is not null)
+            {
+                subtitle.Visible = !compact;
+            }
 
-        _pointButton.Description = compact ? "" : "Find the perfect pixel. Arrow keys for precision.";
-        _regionButton.Description = compact ? "" : "Turn any part of your screen into a palette.";
-        _pointButton.Invalidate();
-        _regionButton.Invalidate();
-        _paletteLayout.SetRowHeight(0, compact ? 44 : 56);
-        _paletteHeader.SetRowHeight(0, compact ? 20 : 24);
-        _paletteHeader.SetRowHeight(1, compact ? 24 : 28);
-        _paletteLayout.SetRowHeight(1, compact ? 0 : 32);
-        _paletteLayout.SetRowHeight(3, compact ? 0 : 32);
-        _paletteLayout.SetRowHeight(4, compact ? 48 : 52);
-        int verticalMargin = (int)Math.Round((compact ? 6 : 14) * DeviceDpi / 96f);
-        _settingsButton.Margin = new Padding(0, verticalMargin, 0, verticalMargin);
+            _pointButton.Description = compact ? "" : "Find the perfect pixel. Arrow keys for precision.";
+            _regionButton.Description = compact ? "" : "Turn any part of your screen into a palette.";
+            _pointButton.Invalidate();
+            _regionButton.Invalidate();
+            _paletteLayout.SetRowHeight(0, compact ? 44 : 56);
+            _paletteHeader.SetRowHeight(0, compact ? 20 : 24);
+            _paletteHeader.SetRowHeight(1, compact ? 24 : 28);
+            _paletteLayout.SetRowHeight(1, compact ? 0 : 32);
+            _paletteLayout.SetRowHeight(3, compact ? 0 : 32);
+            _paletteLayout.SetRowHeight(4, compact ? 48 : 52);
+            int verticalMargin = (int)Math.Round((compact ? 6 : 14) * DeviceDpi / 96f);
+            _settingsButton.Margin = new Padding(0, verticalMargin, 0, verticalMargin);
+        }
+        finally
+        {
+            _paletteHeader.ResumeLayout(true);
+            _paletteLayout.ResumeLayout(true);
+            _wordmark.ResumeLayout(true);
+            _dashboardLayout.ResumeLayout(true);
+        }
         FitWorkspaceColumns();
     }
 
@@ -430,7 +446,11 @@ public partial class MainDashboardForm
             _paletteCard.Visible = !narrow || !_isInspectorViewActive;
             _inspectorCard.Visible = !narrow || _isInspectorViewActive;
             _paletteCard.Margin = new Padding(0, 0, narrow ? 0 : Scale(16), 0);
-            _workspace.SetCellPosition(_inspectorCard, new TableLayoutPanelCellPosition(narrow ? 0 : 1, 0));
+            var inspectorCell = new TableLayoutPanelCellPosition(narrow ? 0 : 1, 0);
+            if (_workspace.GetCellPosition(_inspectorCard) != inspectorCell)
+            {
+                _workspace.SetCellPosition(_inspectorCard, inspectorCell);
+            }
             _workspace.ColumnStyles[1].Width = narrow ? 0 : Math.Min(Scale(408), _workspace.ClientSize.Width * .43f);
         }
         finally
