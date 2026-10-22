@@ -1,3 +1,5 @@
+<a id="readme-top"></a>
+
 <p align="center">
   <img src="docs/assets/logo.svg" width="80" alt="ChromaTray logo">
 </p>
@@ -14,11 +16,12 @@
 </p>
 
 <p align="center">
-  <a href="https://gh0st3r0k.github.io/ChromaTray/">Documentation</a> ·
+  <a href="#features">Features</a> ·
   <a href="#quick-start">Quick start</a> ·
   <a href="#controls">Controls</a> ·
-  <a href="docs/DEVELOPMENT.md">Development</a> ·
-  <a href="docs/RUNNING.md">Local setup guide</a>
+  <a href="#documentation">Documentation</a> ·
+  <a href="#build-and-test">Build &amp; test</a> ·
+  <a href="#run-it-on-your-own-pc">Local setup</a>
 </p>
 
 ![ChromaTray color picker and palette illustration](docs/assets/banner.svg)
@@ -26,6 +29,22 @@
 <p align="center"><sub>Feature illustration; not a screenshot of the running application.</sub></p>
 
 ChromaTray is a Windows tray app for bringing screen colors into your code and design work. Pick one pixel to copy its value, or select a rectangle to discover its most frequent colors and their shares. Everything runs locally, without an account, API key, or backend service.
+
+<details>
+<summary>Contents</summary>
+
+- [Features](#features)
+- [Quick start](#quick-start)
+- [Controls](#controls)
+- [Color accuracy](#color-accuracy)
+- [Export examples](#export-examples)
+- [Documentation](#documentation)
+- [Build and test](#build-and-test)
+- [AI-assisted development](#ai-assisted-development)
+- [License](#license)
+- [Run it on your own PC](#run-it-on-your-own-pc)
+
+</details>
 
 ## Features
 
@@ -176,3 +195,5 @@ ChromaTray is developed by **Kostiantyn Zaitsev (Gh0st3r0k)** with AI used as a 
 5. Use **Ctrl+Shift+X** for a pixel and **Ctrl+Shift+Z** for a region. Choose **Exit** from the tray menu when finished.
 
 For detailed setup, troubleshooting, and settings recovery, follow [Running ChromaTray locally](docs/RUNNING.md).
+
+[Back to top](#readme-top)
