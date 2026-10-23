@@ -171,6 +171,24 @@ public class FormConstructionTests
     }
 
     [Fact]
+    public void Dashboard_InspectorPaintingDoesNotRepaintItsParentCard()
+    {
+        OverlayKeyboardTests.OnSta(() =>
+        {
+            using var dashboard = new MainDashboardForm(new AppSettings());
+            dashboard.Show();
+            System.Windows.Forms.Application.DoEvents();
+            var inspector = dashboard.Controls.Find("InspectorLayout", true).Single();
+            int parentPaints = 0;
+            inspector.Parent!.Paint += (_, _) => parentPaints++;
+            using var bitmap = new System.Drawing.Bitmap(inspector.Width, inspector.Height);
+            inspector.DrawToBitmap(bitmap, inspector.ClientRectangle);
+            Assert.Equal(0, parentPaints);
+            Assert.Equal(255, inspector.BackColor.A);
+        });
+    }
+
+    [Fact]
     public void DashboardAndSettings_CanCreateWindowsHandlesAndDispose()
     {
         Exception? failure = null;

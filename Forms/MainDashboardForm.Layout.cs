@@ -67,6 +67,7 @@ public partial class MainDashboardForm
         {
             Margin = Padding.Empty
         }, 20), (_workspace, -1), (footer, 40));
+        _dashboardLayout.BackColor = StudioTheme.Canvas;
         _dashboardLayout.Name = "DashboardLayout";
         _dashboardLayout.LogicalPadding = new Padding(24, 16, 24, 8);
         Controls.Add(_dashboardLayout);
@@ -83,7 +84,7 @@ public partial class MainDashboardForm
             ColumnCount = 3,
             RowCount = 1,
             Margin = Padding.Empty,
-            BackColor = Color.Transparent
+            BackColor = StudioTheme.Canvas
         };
         _header.Name = "MainHeader";
         _header.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
@@ -102,6 +103,7 @@ public partial class MainDashboardForm
         _wordmark = StudioTheme.Stack(
             (StudioTheme.Label("ChromaTray", StudioTheme.Title), 42),
             (StudioTheme.Label("A little color. A lot of possibility.", StudioTheme.Small, StudioTheme.Muted), 24));
+        _wordmark.BackColor = StudioTheme.Canvas;
         _paletteTab = new StudioButton
         {
             Name = "PaletteViewButton",
@@ -185,7 +187,7 @@ public partial class MainDashboardForm
             ColumnCount = 2,
             RowCount = 1,
             Margin = new Padding(0, 12, 0, 0),
-            BackColor = Color.Transparent
+            BackColor = StudioTheme.Canvas
         };
         captureActions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
         captureActions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
@@ -273,6 +275,8 @@ public partial class MainDashboardForm
 (StudioTheme.Label("Select a shade to explore its formats. Double-click to copy.", StudioTheme.Small, StudioTheme.Muted), 32),
 (exportRow, 52)
 );
+        _paletteLayout.BackColor = StudioTheme.Surface;
+        _paletteHeader.BackColor = StudioTheme.Surface;
         _paletteCard.Controls.Add(_paletteLayout);
     }
 
@@ -293,6 +297,7 @@ public partial class MainDashboardForm
         _formatRows = new TableLayoutPanel
         {
             Name = "ColorFormats",
+            BackColor = StudioTheme.Surface,
             ColumnCount = 1,
             Margin = Padding.Empty,
             AutoSize = true,
@@ -320,6 +325,7 @@ public partial class MainDashboardForm
 (copyFormats, 58),
 (StudioTheme.Label("All enabled formats. One click to copy.", StudioTheme.Small, StudioTheme.Muted), 28)
 );
+        _inspectorLayout.BackColor = StudioTheme.Surface;
         _inspectorLayout.Name = "InspectorLayout";
         _inspectorLayout.SizeChanged += (_, _) => FitInspectorContent();
         _inspectorCard.Controls.Add(_inspectorLayout);
@@ -334,6 +340,7 @@ public partial class MainDashboardForm
             Dock = DockStyle.Fill,
             Margin = Padding.Empty
         };
+        _workspace.BackColor = StudioTheme.Canvas;
         _workspace.Name = "PaletteWorkspace";
         _workspace.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         _workspace.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
@@ -547,6 +554,7 @@ public partial class MainDashboardForm
             {
                 ColumnCount = 3,
                 RowCount = 1,
+                BackColor = StudioTheme.Surface,
                 Dock = DockStyle.Fill,
                 Margin = Padding.Empty
             };

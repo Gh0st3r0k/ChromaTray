@@ -5,8 +5,19 @@ namespace ChromaTray.Forms.Controls;
 /// <summary>
 /// A vertical layout that retains design dimensions and reapplies the current window DPI.
 /// </summary>
-internal sealed class DpiStackPanel(int[] rowHeights) : TableLayoutPanel
+internal sealed class DpiStackPanel : TableLayoutPanel
 {
+    private readonly int[] _rowHeights;
+
+    public DpiStackPanel(int[] rowHeights)
+    {
+        _rowHeights = rowHeights;
+        // Buffer each layout surface independently; do not compose the whole
+        // native window tree, which can leave a black frame during restore.
+        DoubleBuffered = true;
+        ResizeRedraw = true;
+    }
+
     private readonly Dictionary<Control, Padding> _margins = new();
     private Padding _logicalPadding;
     private bool _isUpdatingLayout;
@@ -30,11 +41,11 @@ internal sealed class DpiStackPanel(int[] rowHeights) : TableLayoutPanel
 
     public void SetRowHeight(int row, int logicalHeight)
     {
-        if (rowHeights[row] == logicalHeight)
+        if (_rowHeights[row] == logicalHeight)
         {
             return;
         }
-        rowHeights[row] = logicalHeight;
+        _rowHeights[row] = logicalHeight;
         _metricsDirty = true;
         PerformLayout();
     }
@@ -79,10 +90,10 @@ internal sealed class DpiStackPanel(int[] rowHeights) : TableLayoutPanel
                     int Scale(int value) => (int)Math.Round(value * dpi / 96f);
                     Padding ScalePadding(Padding padding) => new(Scale(padding.Left), Scale(padding.Top), Scale(padding.Right), Scale(padding.Bottom));
                     Padding = ScalePadding(_logicalPadding);
-                    for (int row = 0; row < Math.Min(rowHeights.Length, RowStyles.Count); row++)
+                    for (int row = 0; row < Math.Min(_rowHeights.Length, RowStyles.Count); row++)
                     {
-                        if (rowHeights[row] >= 0)
-                            RowStyles[row].Height = Scale(rowHeights[row]);
+                        if (_rowHeights[row] >= 0)
+                            RowStyles[row].Height = Scale(_rowHeights[row]);
                     }
                     foreach (var (control, margin) in _margins)
                         control.Margin = ScalePadding(margin);
