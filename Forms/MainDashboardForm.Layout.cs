@@ -300,8 +300,10 @@ public partial class MainDashboardForm
             BackColor = StudioTheme.Surface,
             ColumnCount = 1,
             Margin = Padding.Empty,
-            AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowAndShrink
+            // StudioScrollViewport owns width and height. AutoSize would shrink
+            // this table back to its preferred width after Bounds is assigned,
+            // collapsing value columns and pulling Copy away from the right edge.
+            AutoSize = false
         };
         _formatRows.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         var copyFormats = new StudioButton

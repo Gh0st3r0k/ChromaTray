@@ -128,6 +128,16 @@ public class AppearanceRegressionTests
                 Assert.True(copy.Width >= 70 * dpi / 96, $"{format} copy button is too narrow.");
                 Assert.True(copy.Height >= 32 * dpi / 96, $"{format} copy button is too short.");
                 Assert.True(copy.Parent!.ClientRectangle.Contains(copy.Bounds), $"{format} copy button is clipped by its row.");
+                var row = copy.Parent!;
+                var formats = Find(dashboard, "ColorFormats");
+                var viewport = formats.Parent!;
+                Assert.InRange(Math.Abs(formats.Width - viewport.ClientSize.Width), 0, 1);
+                Assert.InRange(Math.Abs(row.Right - formats.ClientSize.Width), 0, 1);
+                Assert.InRange(Math.Abs(copy.Right + copy.Margin.Right - row.ClientSize.Width), 0, 1);
+                var value = Assert.IsType<TextBox>(Find(dashboard, $"Value{format}"));
+                int textWidth = TextRenderer.MeasureText(value.Text, value.Font, Size.Empty, TextFormatFlags.NoPadding).Width;
+                Assert.True(value.ClientSize.Width >= textWidth + 2,
+                    $"{format} value is clipped: needs {textWidth + 2}px, has {value.ClientSize.Width}px.");
             }
             Assert.True(Find(dashboard, "FormatsViewport").Height >= 48 * dpi / 96, "The inspector cannot display one complete format row.");
             SavePreview(dashboard, $"inspector-dpi-{dpi}.png");
