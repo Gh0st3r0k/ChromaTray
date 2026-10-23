@@ -373,7 +373,6 @@ public partial class MainDashboardForm
         int Scale(int value) => (int)Math.Round(value * DeviceDpi / 96f);
         _header.ColumnStyles[0].Width = Scale(54);
         _header.ColumnStyles[2].Width = Scale(152);
-        _settingsButton.Margin = new Padding(0, Scale(14), 0, Scale(14));
         RebuildDynamicFormatLayout();
         ApplyResponsiveLayout();
         PerformLayout();
