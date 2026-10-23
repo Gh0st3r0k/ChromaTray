@@ -133,6 +133,44 @@ public class FormConstructionTests
     }
 
     [Fact]
+    public void Dashboard_LoadCompletesLayoutBeforeShownAndRestoreKeepsColorValues()
+    {
+        OverlayKeyboardTests.OnSta(() =>
+        {
+            using var dashboard = new MainDashboardForm(new AppSettings());
+            System.Windows.Forms.Control[]? initialRows = null;
+            string[]? initialValues = null;
+            dashboard.Shown += (_, _) =>
+            {
+                var formats = dashboard.Controls.Find("ColorFormats", true).Single();
+                initialRows = formats.Controls.Cast<System.Windows.Forms.Control>().ToArray();
+                initialValues = DescendantTextBoxes(formats).Select(box => box.Text).ToArray();
+                Assert.NotEmpty(initialValues);
+                Assert.All(initialValues, value => Assert.False(string.IsNullOrWhiteSpace(value)));
+            };
+            dashboard.Show();
+            System.Windows.Forms.Application.DoEvents();
+            dashboard.WindowState = System.Windows.Forms.FormWindowState.Minimized;
+            dashboard.WindowState = System.Windows.Forms.FormWindowState.Normal;
+            System.Windows.Forms.Application.DoEvents();
+            var restored = dashboard.Controls.Find("ColorFormats", true).Single();
+            Assert.Equal(initialRows, restored.Controls.Cast<System.Windows.Forms.Control>().ToArray());
+            Assert.Equal(initialValues, DescendantTextBoxes(restored).Select(box => box.Text).ToArray());
+        });
+    }
+
+    private static IEnumerable<System.Windows.Forms.TextBox> DescendantTextBoxes(System.Windows.Forms.Control root)
+    {
+        foreach (System.Windows.Forms.Control child in root.Controls)
+        {
+            if (child is System.Windows.Forms.TextBox box)
+                yield return box;
+            foreach (var descendant in DescendantTextBoxes(child))
+                yield return descendant;
+        }
+    }
+
+    [Fact]
     public void DashboardAndSettings_CanCreateWindowsHandlesAndDispose()
     {
         Exception? failure = null;

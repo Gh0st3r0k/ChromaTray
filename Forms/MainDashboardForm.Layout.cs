@@ -42,6 +42,7 @@ public partial class MainDashboardForm
 
     private void ConfigureWindow()
     {
+        DoubleBuffered = true;
         Text = "ChromaTray · Color studio";
         AutoScaleDimensions = new SizeF(96, 96);
         AutoScaleMode = AutoScaleMode.Dpi;

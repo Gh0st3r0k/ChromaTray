@@ -98,12 +98,31 @@ public partial class MainDashboardForm : Form
         }
     }
 
+    // Buffer the entire HWND subtree, including native text boxes and labels.
+    // Form.DoubleBuffered alone does not cover these child windows, so they can
+    // otherwise appear one at a time during taskbar restore.
+    protected override CreateParams CreateParams
+    {
+        get
+        {
+            var parameters = base.CreateParams;
+            parameters.ExStyle |= 0x02000000; // WS_EX_COMPOSITED
+            return parameters;
+        }
+    }
+
     protected override void OnShown(EventArgs e)
     {
         long shownStarted = UiPerformance.Start();
         base.OnShown(e);
         UiPerformance.RecordWhenIdle(this, "shown-to-idle", shownStarted);
-        // Reopening from the tray must reuse the existing controls and palette.
+    }
+
+    protected override void OnLoad(EventArgs e)
+    {
+        base.OnLoad(e);
+        // Finish sizing and populating controls before Windows presents the
+        // first frame, rather than rearranging a dashboard that is already shown.
         if (_hasInitializedWindow)
         {
             return;
