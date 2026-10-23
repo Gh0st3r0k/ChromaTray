@@ -4,6 +4,8 @@
   href: getting-started.md
 - name: Разработка
   href: development.md
+- name: Планы развития
+  href: roadmap.md
 - name: Справочник API
   href: ../../api/toc.yml
   homepage: api/index.md

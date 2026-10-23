@@ -4,6 +4,8 @@
   href: getting-started.md
 - name: Vývoj
   href: development.md
+- name: Plány rozvoja
+  href: roadmap.md
 - name: Referencia API
   href: ../../api/toc.yml
   homepage: api/index.md

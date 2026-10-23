@@ -39,6 +39,7 @@ ChromaTray is a Windows tray app for bringing screen colors into your code and d
 - [Color accuracy](#color-accuracy)
 - [Export examples](#export-examples)
 - [Documentation](#documentation)
+- [Development roadmap](#development-roadmap)
 - [Build and test](#build-and-test)
 - [AI-assisted development](#ai-assisted-development)
 - [License](#license)
@@ -148,6 +149,7 @@ Browse the published guides in [English](https://gh0st3r0k.github.io/ChromaTray/
 | --- | --- |
 | [Running locally](docs/RUNNING.md) | Install prerequisites, run the app, publish executables, and resolve common issues. |
 | [Development guide](docs/DEVELOPMENT.md) | Understand the code, capture lifecycle, tests, documentation builds, and release workflow. |
+| [Development roadmap](docs/ROADMAP.md) | Themes, cross-platform support, and technology evaluation ideas. |
 | [Windows checklist](docs/WINDOWS-CHECKLIST.md) | Verify real desktop capture, mixed DPI, keyboard navigation, and appearance before a release. |
 | [DocFX source](docs/site/index.md) | Read the site content directly in the repository. |
 
@@ -161,6 +163,10 @@ dotnet docfx serve artifacts/docs-site --port 8080
 ```
 
 Open `http://localhost:8080`. On Linux/macOS, use `python3` if needed. Generated HTML and API metadata are excluded from Git. The [development guide](docs/DEVELOPMENT.md#documentation) explains editing and publishing the site.
+
+## Development roadmap
+
+Future ideas include light and dark themes, custom interface colors, Windows/Linux/macOS support, and evaluating alternative technologies with a prototype. See the [development roadmap](docs/ROADMAP.md) for scope and tradeoffs; these are ideas rather than scheduled commitments.
 
 ## Build and test
 

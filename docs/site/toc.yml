@@ -4,6 +4,8 @@
   href: getting-started.md
 - name: Development
   href: development.md
+- name: Development roadmap
+  href: roadmap.md
 - name: API reference
   href: api/
   homepage: api/index.md
