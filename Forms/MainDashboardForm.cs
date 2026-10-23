@@ -224,18 +224,18 @@ public partial class MainDashboardForm : Form
 
     private void ShowMainWindow()
     {
-        // Restore hidden/minimized windows in one layout pass. Showing the
-        // minimized tree first needlessly lays it out before restoring its size.
+        // Batch layout while restoring. A hidden HWND must be shown before
+        // changing WindowState: Show can otherwise reapply its minimized state.
         SuspendLayout();
         try
         {
-            if (WindowState == FormWindowState.Minimized)
-            {
-                WindowState = FormWindowState.Normal;
-            }
             if (!Visible)
             {
                 Show();
+            }
+            if (WindowState == FormWindowState.Minimized)
+            {
+                WindowState = FormWindowState.Normal;
             }
         }
         finally
