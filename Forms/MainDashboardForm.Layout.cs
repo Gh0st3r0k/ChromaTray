@@ -7,6 +7,8 @@ public partial class MainDashboardForm
 {
     private bool _isInspectorViewActive;
     private bool _isUpdatingWorkspace;
+    private ColorFormat[]? _renderedFormats;
+    private int _renderedFormatsDpi;
 
     // InitializeLayout creates controls once. Early WinForms events check that they are ready.
     private StudioButton _pointButton = null!;
@@ -497,6 +499,13 @@ public partial class MainDashboardForm
 
     private void RebuildDynamicFormatLayout()
     {
+        // First show and DPI notifications may ask for the same rows again.
+        // Keep the existing native controls unless their formats or scale changed.
+        if (_renderedFormatsDpi == DeviceDpi && _renderedFormats is not null &&
+            _renderedFormats.SequenceEqual(_settings.ActiveFormats))
+        {
+            return;
+        }
         int selectedIndex = _paletteGrid.SelectedIndex;
         int Scale(int value) => (int)Math.Round(value * DeviceDpi / 96f);
         _formatRows.SuspendLayout();
@@ -553,6 +562,8 @@ public partial class MainDashboardForm
             _formatRows.Controls.Add(line, 0, row++);
         }
 
+        _renderedFormats = _settings.ActiveFormats.ToArray();
+        _renderedFormatsDpi = DeviceDpi;
         _formatRows.ResumeLayout(true);
         if (_currentPalette.Count > 0)
         {

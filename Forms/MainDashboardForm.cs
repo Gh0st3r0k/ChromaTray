@@ -39,11 +39,19 @@ public partial class MainDashboardForm : Form
         _appIcon = CreateDynamicAppIcon();
         Icon = _appIcon;
         _trayIcon = CreateTrayIcon();
-        InitializeLayout();
-        UpdateHotkeyLabels();
-        RebuildDynamicFormatLayout();
-        var initialColor = ColorDetails.FromColor(StudioTheme.Accent);
-        UpdatePaletteList([initialColor], "Ready. Pick a point or scan a region to start.");
+        SuspendLayout();
+        try
+        {
+            InitializeLayout();
+            UpdateHotkeyLabels();
+            RebuildDynamicFormatLayout();
+            var initialColor = ColorDetails.FromColor(StudioTheme.Accent);
+            UpdatePaletteList([initialColor], "Ready. Pick a point or scan a region to start.");
+        }
+        finally
+        {
+            ResumeLayout(false);
+        }
     }
 
     private NotifyIcon CreateTrayIcon()

@@ -10,6 +10,8 @@ internal sealed class DpiStackPanel(int[] rowHeights) : TableLayoutPanel
     private readonly Dictionary<Control, Padding> _margins = new();
     private Padding _logicalPadding;
     private bool _isUpdatingLayout;
+    private bool _metricsDirty = true;
+    private int _metricsDpi;
 
     public Padding LogicalPadding
     {
@@ -21,6 +23,7 @@ internal sealed class DpiStackPanel(int[] rowHeights) : TableLayoutPanel
                 return;
             }
             _logicalPadding = value;
+            _metricsDirty = true;
             PerformLayout();
         }
     }
@@ -32,6 +35,7 @@ internal sealed class DpiStackPanel(int[] rowHeights) : TableLayoutPanel
             return;
         }
         rowHeights[row] = logicalHeight;
+        _metricsDirty = true;
         PerformLayout();
     }
 
@@ -40,6 +44,7 @@ internal sealed class DpiStackPanel(int[] rowHeights) : TableLayoutPanel
         if (e.Control is not null)
         {
             _margins[e.Control] = e.Control.Margin;
+            _metricsDirty = true;
         }
         base.OnControlAdded(e);
     }
@@ -61,30 +66,34 @@ internal sealed class DpiStackPanel(int[] rowHeights) : TableLayoutPanel
         }
 
         _isUpdatingLayout = true;
-        SuspendLayout();
         try
         {
-            int Scale(int value) => (int)Math.Round(value * StudioTheme.Dpi(this) / 96f);
-            Padding ScalePadding(Padding padding) => new(Scale(padding.Left), Scale(padding.Top), Scale(padding.Right), Scale(padding.Bottom));
-            Padding = ScalePadding(_logicalPadding);
-            for (int row = 0; row < Math.Min(rowHeights.Length, RowStyles.Count); row++)
+            int dpi = StudioTheme.Dpi(this);
+            // Visibility, painting and child layout do not change design metrics.
+            // Reapplying them invalidates TableLayoutPanel's preferred-size cache.
+            if (_metricsDirty || _metricsDpi != dpi)
             {
-                if (rowHeights[row] >= 0)
+                SuspendLayout();
+                try
                 {
-                    RowStyles[row].Height = Scale(rowHeights[row]);
+                    int Scale(int value) => (int)Math.Round(value * dpi / 96f);
+                    Padding ScalePadding(Padding padding) => new(Scale(padding.Left), Scale(padding.Top), Scale(padding.Right), Scale(padding.Bottom));
+                    Padding = ScalePadding(_logicalPadding);
+                    for (int row = 0; row < Math.Min(rowHeights.Length, RowStyles.Count); row++)
+                    {
+                        if (rowHeights[row] >= 0)
+                            RowStyles[row].Height = Scale(rowHeights[row]);
+                    }
+                    foreach (var (control, margin) in _margins)
+                        control.Margin = ScalePadding(margin);
+                    _metricsDpi = dpi;
+                    _metricsDirty = false;
+                }
+                finally
+                {
+                    ResumeLayout(false);
                 }
             }
-            foreach (var (control, margin) in _margins)
-                control.Margin = ScalePadding(margin);
-        }
-        finally
-        {
-            // Updating metrics queues layout requests. Consume them in the single
-            // base pass below, keeping the guard active while children are laid out.
-            ResumeLayout(false);
-        }
-        try
-        {
             base.OnLayout(levent);
         }
         finally

@@ -62,6 +62,32 @@ public class FormConstructionTests
     }
 
     [Fact]
+    public void Dashboard_UnchangedDpiMetricsReuseFormatControlsButChangedFormatsRebuild()
+    {
+        OverlayKeyboardTests.OnSta(() =>
+        {
+            var settings = new AppSettings();
+            using var dashboard = new MainDashboardForm(settings);
+            dashboard.Show();
+            System.Windows.Forms.Application.DoEvents();
+            var formats = dashboard.Controls.Find("ColorFormats", true).Single();
+            var rows = formats.Controls.Cast<System.Windows.Forms.Control>().ToArray();
+            var metrics = typeof(MainDashboardForm).GetMethod("ApplyDpiMetrics",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+            for (int i = 0; i < 3; i++)
+                metrics.Invoke(dashboard, null);
+            Assert.Equal(rows, formats.Controls.Cast<System.Windows.Forms.Control>().ToArray());
+            Assert.All(rows, row => Assert.False(row.IsDisposed));
+
+            settings.ActiveFormats = [ColorFormat.Rgb];
+            metrics.Invoke(dashboard, null);
+            Assert.All(rows, row => Assert.True(row.IsDisposed));
+            Assert.Single(formats.Controls.Cast<System.Windows.Forms.Control>());
+            Assert.Single(formats.Controls.Find("ValueRgb", true));
+        });
+    }
+
+    [Fact]
     public void DashboardAndSettings_CanCreateWindowsHandlesAndDispose()
     {
         Exception? failure = null;

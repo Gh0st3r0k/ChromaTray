@@ -75,6 +75,7 @@ internal static class StudioTheme
             Padding = Padding.Empty,
             BackColor = Color.Transparent
         };
+        stack.SuspendLayout();
         stack.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         for (int i = 0; i < rows.Length; i++)
         {
@@ -83,6 +84,7 @@ internal static class StudioTheme
             control.Dock = DockStyle.Fill;
             stack.Controls.Add(control, 0, i);
         }
+        stack.ResumeLayout(false);
         return stack;
     }
 
