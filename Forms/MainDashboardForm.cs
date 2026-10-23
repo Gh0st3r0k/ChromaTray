@@ -14,6 +14,9 @@ namespace ChromaTray.Forms;
 /// </summary>
 public partial class MainDashboardForm : Form
 {
+    private const int WindowSizeMessage = 0x0005;
+    private const int SizeMinimized = 1;
+
     private readonly AppSettings _settings;
     private readonly NotifyIcon _trayIcon;
     private readonly ToolStripMenuItem _trayPointItem = new();
@@ -153,7 +156,7 @@ public partial class MainDashboardForm : Form
     protected override void WndProc(ref Message m)
     {
         // Taskbar restore sends WM_SIZE directly and bypasses ShowMainWindow.
-        bool taskbarRestore = m.Msg == 0x0005 && m.WParam.ToInt32() != 1 &&
+        bool taskbarRestore = m.Msg == WindowSizeMessage && m.WParam.ToInt32() != SizeMinimized &&
             WindowState == FormWindowState.Minimized;
         long taskbarStarted = taskbarRestore ? UiPerformance.Start() : 0;
         if (m.Msg == NativeHotkeyManager.HotkeyMessage)

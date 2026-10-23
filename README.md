@@ -176,6 +176,8 @@ dotnet restore ChromaTray.Core.Tests/ChromaTray.Core.Tests.csproj --locked-mode
 dotnet test ChromaTray.Core.Tests/ChromaTray.Core.Tests.csproj -c Release --no-restore
 ```
 
+Before rebuilding, choose **Exit** in the tray menu: closing the dashboard only hides it and leaves the executable in use. See [troubleshooting and window timing diagnostics](docs/RUNNING.md#troubleshooting) if a build is locked or restoration looks slow.
+
 GitHub Actions runs Linux algorithm tests and Windows regression tests. Version tags matching `v*.*.*` additionally publish the two executables and checksums after both jobs pass. See [development and release instructions](docs/DEVELOPMENT.md).
 
 ## AI-assisted development

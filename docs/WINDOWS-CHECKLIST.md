@@ -8,6 +8,8 @@ Record the commit or release, Windows version, monitor arrangement, display scal
 
 - [ ] Launch the application: the dashboard, tray icon, color formats, and initial `#98DED9` sample are visible.
 - [ ] Close the dashboard: it hides, and clicking the tray icon restores it.
+- [ ] Minimize and restore using the taskbar several times: the palette and selection persist, with no black frame or visibly staggered controls. Check normal and maximized windows separately.
+- [ ] At each supported DPI, verify that complete color values fit and individual **Copy** buttons stay at the right edge, including after restoring the window.
 - [ ] Start a second instance: it reports that ChromaTray is already running.
 - [ ] Choose **Exit**: the icon disappears, the process stops, and a subsequent launch works.
 
@@ -19,7 +21,7 @@ Record the commit or release, Windows version, monitor arrangement, display scal
 - [ ] Alternate mouse and arrow input, then confirm: the magnifier, coordinates, and result all refer to the same point.
 - [ ] Open the picker while the dashboard is hidden, then cancel with Esc and right click in separate attempts: cancellation preserves the previous dashboard visibility.
 - [ ] Verify RGB/HEX and magnifier readability over black and white backgrounds near every monitor edge.
-- [ ] Confirm that only one thick crosshair is visible and the point-mode snapshot is untinted.
+- [ ] Confirm that only one white crosshair is visible and the point-mode snapshot is untinted.
 
 ## Multiple monitors and DPI
 

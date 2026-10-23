@@ -12,8 +12,10 @@ title: Начало работы
 
 ```powershell
 dotnet restore ChromaTray.csproj --locked-mode
-dotnet run --project ChromaTray.csproj
+dotnet run --project ChromaTray.csproj -c Release --no-restore
 ```
+
+Перед обновлением или сборкой выберите **Exit** в меню трея. Крестик скрывает окно, но процесс продолжает блокировать EXE. Сворачивание через панель задач и скрытие в трей — разные действия; оба сохраняют текущую палитру.
 
 ## Выбор цветов
 

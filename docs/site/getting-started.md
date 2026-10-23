@@ -12,8 +12,10 @@ To run from source on Windows, install the .NET 8 SDK and use these commands fro
 
 ```powershell
 dotnet restore ChromaTray.csproj --locked-mode
-dotnet run --project ChromaTray.csproj
+dotnet run --project ChromaTray.csproj -c Release --no-restore
 ```
+
+Before updating or rebuilding, choose **Exit** in the tray menu. X hides the window and leaves the executable locked. Taskbar minimize and tray hide are separate actions; both preserve the current palette.
 
 The SDK must be in the **8.0.4xx** feature band selected by `global.json`. For Visual Studio setup, executable publishing, settings recovery, and common errors, use the [complete local setup guide](https://github.com/Gh0st3r0k/ChromaTray/blob/main/docs/RUNNING.md).
 

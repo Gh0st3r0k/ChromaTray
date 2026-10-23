@@ -161,6 +161,8 @@ Use the [Windows checklist](WINDOWS-CHECKLIST.md) for real desktop capture and d
 | The app asks to install .NET | Install **Desktop Runtime 8 x64** for the lightweight build, or use standalone. |
 | `ChromaTray.csproj` cannot be found | Open PowerShell in the extracted repository directory. |
 | A shortcut does not work | Check the status message. Another application may own the combination; change it in Settings or use a capture button. |
+| `MSB3021` / `MSB3027`: EXE is locked by ChromaTray | Choose **Exit** in the tray menu before building. X only hides the window. If the tray is unavailable, end **ChromaTray.exe** in Task Manager, then rebuild and launch only after the build succeeds. |
+| Error 4551: Application Control blocked the EXE | Check **CodeIntegrity → Operational** in Event Viewer and identify the enforced policy. Smart App Control and managed App Control policies have different remedies; an administrator may need to authorize a trusted signed build. Running as administrator does not override the policy. |
 | ChromaTray is already running | Find its tray icon, restore the existing instance, or choose Exit before restarting. |
 | The window disappears after clicking X | Closing the dashboard leaves the application in the tray. |
 | The clipboard is busy | Retry Copy after the other application finishes its clipboard operation. |
@@ -173,7 +175,7 @@ Use the [Windows checklist](WINDOWS-CHECKLIST.md) for real desktop capture and d
 
 When reporting a problem, include the commit or release, Windows version, monitor arrangement and scaling, build command, exact error, and steps to reproduce. Crop screenshots to the relevant area.
 
-## Startup and tray restore timings
+## Startup, tray, and taskbar restore timings
 
 To investigate a slow window, exit the existing tray instance and enable optional
 local diagnostics in Command Prompt before launching a fresh build:
@@ -183,9 +185,18 @@ set "CHROMATRAY_PERF_LOG=%TEMP%\ChromaTray-performance.log"
 bin\Release\net8.0-windows\ChromaTray.exe
 ```
 
-Close the dashboard and reopen it from the tray several times, then inspect the
-log. It records dashboard construction, synchronous restore, and elapsed time to
-the next UI idle event. Startup timing starts in managed `Main`; it excludes
+Test the two restore paths separately: close with X and reopen through the tray
+icon; then minimize and restore through the taskbar. Inspect the log with:
+
+```cmd
+type "%TEMP%\ChromaTray-performance.log"
+```
+
+`restore-*` entries measure the tray/programmatic path; `taskbar-restore-*`
+entries measure native restoration from the minimized state. Construction and
+startup entries occur once per process. Each restore records synchronous work
+and elapsed time to the next UI idle event. Startup timing starts in managed
+`Main`; it excludes
 process creation and .NET runtime loading. Idle is a message-loop measurement,
 not a guarantee that Windows has presented the frame. Logs contain timestamps,
 process IDs and durations, without settings or captured screen contents.

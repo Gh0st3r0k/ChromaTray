@@ -71,6 +71,28 @@ The settings dialog edits shortcut copies. It validates the candidate and saves 
 
 `StudioTheme` centralizes colors, shared fonts, and drawing helpers. Shared fonts live for the application's lifetime. `DpiStackPanel` retains logical dimensions at 96 DPI and scales them for the current window. Preserve that baseline when creating controls after a DPI change. Rounded controls must paint their parent's background in the corners; treating them as opaque rectangles causes visible corner artifacts.
 
+### Window restoration and painting
+
+The dashboard builds its controls once and finishes initial sizing in `OnLoad`,
+before the first visible frame. Closing with X hides the window; taskbar minimize
+keeps it visible in the taskbar. Tray commands use `ShowMainWindow`, while native
+taskbar restoration arrives through `WM_SIZE`. Preserve both paths when changing
+window lifetime behavior.
+
+Layout caches include their size, DPI, and selected-tab inputs. Minimized windows
+skip responsive panel reconfiguration. Format controls are rebuilt only when the
+active formats or DPI change. `StudioScrollViewport` owns the format table's
+bounds; keep that table's `AutoSize` disabled so values and right-aligned Copy
+buttons retain the available width.
+
+Flat dashboard surfaces use solid theme backgrounds and local panel buffering.
+Rounded controls still preserve the painted background outside their curves.
+Avoid whole-window `WS_EX_COMPOSITED`: it produced a black frame during restore
+on the user's Windows machine. Automated layout checks do not prove smooth
+presentation; use the Windows checklist and the optional [timing diagnostics](RUNNING.md#startup-tray-and-taskbar-restore-timings)
+for real desktop verification. `UiPerformance` is disabled unless its log path is
+set before startup; idle timings exclude process creation and runtime loading.
+
 ## Build and test
 
 From the repository root on Windows:

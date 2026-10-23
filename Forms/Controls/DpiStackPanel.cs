@@ -1,13 +1,16 @@
 namespace ChromaTray.Forms.Controls;
 
-// Keep the original dimensions unchanged during scaling. This prevents
-// controls created after a DPI change from being scaled twice.
 /// <summary>
 /// A vertical layout that retains design dimensions and reapplies the current window DPI.
 /// </summary>
 internal sealed class DpiStackPanel : TableLayoutPanel
 {
     private readonly int[] _rowHeights;
+    private readonly Dictionary<Control, Padding> _margins = new();
+    private Padding _logicalPadding;
+    private bool _isUpdatingLayout;
+    private bool _metricsDirty = true;
+    private int _metricsDpi;
 
     public DpiStackPanel(int[] rowHeights)
     {
@@ -17,12 +20,6 @@ internal sealed class DpiStackPanel : TableLayoutPanel
         DoubleBuffered = true;
         ResizeRedraw = true;
     }
-
-    private readonly Dictionary<Control, Padding> _margins = new();
-    private Padding _logicalPadding;
-    private bool _isUpdatingLayout;
-    private bool _metricsDirty = true;
-    private int _metricsDpi;
 
     public Padding LogicalPadding
     {
@@ -93,10 +90,14 @@ internal sealed class DpiStackPanel : TableLayoutPanel
                     for (int row = 0; row < Math.Min(_rowHeights.Length, RowStyles.Count); row++)
                     {
                         if (_rowHeights[row] >= 0)
+                        {
                             RowStyles[row].Height = Scale(_rowHeights[row]);
+                        }
                     }
                     foreach (var (control, margin) in _margins)
+                    {
                         control.Margin = ScalePadding(margin);
+                    }
                     _metricsDpi = dpi;
                     _metricsDirty = false;
                 }

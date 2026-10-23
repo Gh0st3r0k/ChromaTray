@@ -3,7 +3,10 @@ using System.Globalization;
 
 namespace ChromaTray.Services;
 
-// Opt-in local timings; never log captured colors, settings, or screen contents.
+/// <summary>
+/// Records optional local startup and restore timings without captured content or settings.
+/// Enable before process launch with the CHROMATRAY_PERF_LOG environment variable.
+/// </summary>
 internal static class UiPerformance
 {
     private static readonly string? LogPath = Environment.GetEnvironmentVariable("CHROMATRAY_PERF_LOG");
@@ -13,7 +16,9 @@ internal static class UiPerformance
     internal static void Record(string operation, long started)
     {
         if (started == 0 || string.IsNullOrWhiteSpace(LogPath))
+        {
             return;
+        }
         double milliseconds = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
         try
         {
@@ -29,7 +34,9 @@ internal static class UiPerformance
     internal static void RecordWhenIdle(Form owner, string operation, long started)
     {
         if (started == 0)
+        {
             return;
+        }
         EventHandler? handler = null;
         EventHandler? closed = null;
         void Detach()
@@ -41,7 +48,9 @@ internal static class UiPerformance
         {
             Detach();
             if (!owner.IsDisposed)
+            {
                 Record(operation, started);
+            }
         };
         closed = (_, _) => Detach();
         owner.Disposed += closed;

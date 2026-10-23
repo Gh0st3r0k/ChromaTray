@@ -269,12 +269,12 @@ public partial class MainDashboardForm
         exportRow.Controls.Add(_exportFormatSelect, 0, 0);
         exportRow.Controls.Add(exportButton, 1, 0);
         _paletteLayout = StudioTheme.Stack(
-(_paletteHeader, 56),
-(_paletteStrip, 32),
-(_paletteGrid, -1),
-(StudioTheme.Label("Select a shade to explore its formats. Double-click to copy.", StudioTheme.Small, StudioTheme.Muted), 32),
-(exportRow, 52)
-);
+            (_paletteHeader, 56),
+            (_paletteStrip, 32),
+            (_paletteGrid, -1),
+            (StudioTheme.Label("Select a shade to explore its formats. Double-click to copy.", StudioTheme.Small, StudioTheme.Muted), 32),
+            (exportRow, 52)
+        );
         _paletteLayout.BackColor = StudioTheme.Surface;
         _paletteHeader.BackColor = StudioTheme.Surface;
         _paletteCard.Controls.Add(_paletteLayout);
@@ -321,12 +321,12 @@ public partial class MainDashboardForm
             Content = _formatRows
         };
         _inspectorLayout = StudioTheme.Stack(
-(_inspectorTitleLabel, 30),
-(_colorPreview, 128),
-(formatsViewport, -1),
-(copyFormats, 58),
-(StudioTheme.Label("All enabled formats. One click to copy.", StudioTheme.Small, StudioTheme.Muted), 28)
-);
+            (_inspectorTitleLabel, 30),
+            (_colorPreview, 128),
+            (formatsViewport, -1),
+            (copyFormats, 58),
+            (StudioTheme.Label("All enabled formats. One click to copy.", StudioTheme.Small, StudioTheme.Muted), 28)
+        );
         _inspectorLayout.BackColor = StudioTheme.Surface;
         _inspectorLayout.Name = "InspectorLayout";
         _inspectorLayout.SizeChanged += (_, _) => FitInspectorContent();

@@ -12,8 +12,10 @@ Na spustenie zo zdrojového kódu vo Windows nainštalujte .NET 8 SDK a z koreň
 
 ```powershell
 dotnet restore ChromaTray.csproj --locked-mode
-dotnet run --project ChromaTray.csproj
+dotnet run --project ChromaTray.csproj -c Release --no-restore
 ```
+
+Pred aktualizáciou alebo zostavením zvoľte **Exit** v ponuke systémovej lišty. Krížik okno iba skryje a proces ďalej blokuje EXE. Minimalizácia cez panel úloh a skrytie do systémovej lišty sú rôzne akcie; obe zachovajú aktuálnu paletu.
 
 ## Výber farieb
 
