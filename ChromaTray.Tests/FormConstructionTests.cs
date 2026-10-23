@@ -88,6 +88,30 @@ public class FormConstructionTests
     }
 
     [Fact]
+    public void Dashboard_TaskbarMinimizeDoesNotReconfigureInspectorRows()
+    {
+        OverlayKeyboardTests.OnSta(() =>
+        {
+            using var dashboard = new MainDashboardForm(new AppSettings());
+            dashboard.Show();
+            System.Windows.Forms.Application.DoEvents();
+            var inspector = (System.Windows.Forms.TableLayoutPanel)dashboard.Controls.Find("InspectorLayout", true).Single();
+            var rows = inspector.RowStyles.Cast<System.Windows.Forms.RowStyle>().Select(row => row.Height).ToArray();
+            var originalSize = dashboard.ClientSize;
+            for (int i = 0; i < 3; i++)
+            {
+                dashboard.WindowState = System.Windows.Forms.FormWindowState.Minimized;
+                System.Windows.Forms.Application.DoEvents();
+                Assert.Equal(rows, inspector.RowStyles.Cast<System.Windows.Forms.RowStyle>().Select(row => row.Height).ToArray());
+                dashboard.WindowState = System.Windows.Forms.FormWindowState.Normal;
+                System.Windows.Forms.Application.DoEvents();
+                Assert.Equal(originalSize, dashboard.ClientSize);
+                Assert.Equal(rows, inspector.RowStyles.Cast<System.Windows.Forms.RowStyle>().Select(row => row.Height).ToArray());
+            }
+        });
+    }
+
+    [Fact]
     public void DashboardAndSettings_CanCreateWindowsHandlesAndDispose()
     {
         Exception? failure = null;

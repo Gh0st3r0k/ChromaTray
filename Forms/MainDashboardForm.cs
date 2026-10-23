@@ -146,6 +146,10 @@ public partial class MainDashboardForm : Form
 
     protected override void WndProc(ref Message m)
     {
+        // Taskbar restore sends WM_SIZE directly and bypasses ShowMainWindow.
+        bool taskbarRestore = m.Msg == 0x0005 && m.WParam.ToInt32() != 1 &&
+            WindowState == FormWindowState.Minimized;
+        long taskbarStarted = taskbarRestore ? UiPerformance.Start() : 0;
         if (m.Msg == NativeHotkeyManager.HotkeyMessage)
         {
             int id = m.WParam.ToInt32();
@@ -159,6 +163,11 @@ public partial class MainDashboardForm : Form
             }
         }
         base.WndProc(ref m);
+        if (taskbarRestore)
+        {
+            UiPerformance.Record("taskbar-restore-synchronous", taskbarStarted);
+            UiPerformance.RecordWhenIdle(this, "taskbar-restore-to-idle", taskbarStarted);
+        }
     }
 
     protected override void OnFormClosing(FormClosingEventArgs e)

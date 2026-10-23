@@ -9,6 +9,7 @@ public partial class MainDashboardForm
     private bool _isUpdatingWorkspace;
     private ColorFormat[]? _renderedFormats;
     private int _renderedFormatsDpi;
+    private (bool Compact, int Dpi)? _responsiveMetrics;
 
     // InitializeLayout creates controls once. Early WinForms events check that they are ready.
     private StudioButton _pointButton = null!;
@@ -379,6 +380,13 @@ public partial class MainDashboardForm
     // All dimensions below are logical units at 96 DPI; DpiStackPanel scales them.
     private void ApplyResponsiveLayout()
     {
+        bool compact = ClientSize.Height * 96.0 / DeviceDpi < 760;
+        if (_responsiveMetrics == (compact, DeviceDpi))
+        {
+            FitWorkspaceColumns();
+            return;
+        }
+        _responsiveMetrics = (compact, DeviceDpi);
         // Apply row changes as one layout pass instead of relaying out the entire
         // nested control tree after each assignment.
         _dashboardLayout.SuspendLayout();
@@ -387,7 +395,6 @@ public partial class MainDashboardForm
         _paletteHeader.SuspendLayout();
         try
         {
-            bool compact = ClientSize.Height * 96.0 / DeviceDpi < 760;
             _dashboardLayout.SetRowHeight(0, compact ? 56 : 80);
             _dashboardLayout.SetRowHeight(1, compact ? 64 : 100);
             _dashboardLayout.SetRowHeight(2, compact ? 8 : 20);
@@ -425,7 +432,7 @@ public partial class MainDashboardForm
 
     private void FitWorkspaceColumns()
     {
-        if (_workspace is null || _isUpdatingWorkspace)
+        if (_workspace is null || _isUpdatingWorkspace || WindowState == FormWindowState.Minimized)
         {
             return;
         }
@@ -466,7 +473,7 @@ public partial class MainDashboardForm
 
     private void FitInspectorContent()
     {
-        if (_inspectorLayout is null)
+        if (_inspectorLayout is null || WindowState == FormWindowState.Minimized)
         {
             return;
         }
