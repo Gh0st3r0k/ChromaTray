@@ -7,6 +7,8 @@ public partial class MainDashboardForm
 {
     private bool _isInspectorViewActive;
     private bool _isUpdatingWorkspace;
+    private (int Width, int Dpi, bool InspectorActive)? _workspaceMetrics;
+    private (int Title, int Preview, int Copy, int Hint)? _inspectorMetrics;
     private ColorFormat[]? _renderedFormats;
     private int _renderedFormatsDpi;
     private (bool Compact, int Dpi)? _responsiveMetrics;
@@ -437,6 +439,13 @@ public partial class MainDashboardForm
             return;
         }
 
+        var metrics = (_workspace.ClientSize.Width, DeviceDpi, _isInspectorViewActive);
+        if (_workspaceMetrics == metrics)
+        {
+            FitInspectorContent();
+            return;
+        }
+        _workspaceMetrics = metrics;
         _isUpdatingWorkspace = true;
         _workspace.SuspendLayout();
         try
@@ -490,6 +499,12 @@ public partial class MainDashboardForm
             previewHeight = 0;
         }
 
+        var metrics = (titleHeight, previewHeight, copyHeight, hintHeight);
+        if (_inspectorMetrics == metrics)
+        {
+            return;
+        }
+        _inspectorMetrics = metrics;
         _inspectorLayout.SuspendLayout();
         try
         {

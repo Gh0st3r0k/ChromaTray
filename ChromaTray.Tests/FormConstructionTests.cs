@@ -112,6 +112,27 @@ public class FormConstructionTests
     }
 
     [Fact]
+    public void Dashboard_UnchangedWorkspaceDoesNotScheduleMoreLayout()
+    {
+        OverlayKeyboardTests.OnSta(() =>
+        {
+            using var dashboard = new MainDashboardForm(new AppSettings());
+            dashboard.Show();
+            System.Windows.Forms.Application.DoEvents();
+            var workspace = dashboard.Controls.Find("PaletteWorkspace", true).Single();
+            var inspector = dashboard.Controls.Find("InspectorLayout", true).Single();
+            var fit = typeof(MainDashboardForm).GetMethod("FitWorkspaceColumns",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+            int layouts = 0;
+            workspace.Layout += (_, _) => layouts++;
+            inspector.Layout += (_, _) => layouts++;
+            for (int i = 0; i < 5; i++)
+                fit.Invoke(dashboard, null);
+            Assert.Equal(0, layouts);
+        });
+    }
+
+    [Fact]
     public void DashboardAndSettings_CanCreateWindowsHandlesAndDispose()
     {
         Exception? failure = null;
