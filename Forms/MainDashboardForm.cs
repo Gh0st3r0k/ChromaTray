@@ -120,7 +120,7 @@ public partial class MainDashboardForm : Form
     protected override void OnResize(EventArgs e)
     {
         base.OnResize(e);
-        if (_dashboardLayout is not null)
+        if (_dashboardLayout is not null && WindowState != FormWindowState.Minimized)
         {
             ApplyResponsiveLayout();
         }
@@ -224,10 +224,23 @@ public partial class MainDashboardForm : Form
 
     private void ShowMainWindow()
     {
-        Show();
-        if (WindowState == FormWindowState.Minimized)
+        // Restore hidden/minimized windows in one layout pass. Showing the
+        // minimized tree first needlessly lays it out before restoring its size.
+        SuspendLayout();
+        try
         {
-            WindowState = FormWindowState.Normal;
+            if (WindowState == FormWindowState.Minimized)
+            {
+                WindowState = FormWindowState.Normal;
+            }
+            if (!Visible)
+            {
+                Show();
+            }
+        }
+        finally
+        {
+            ResumeLayout(true);
         }
         Activate();
     }

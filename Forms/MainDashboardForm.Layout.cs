@@ -481,10 +481,18 @@ public partial class MainDashboardForm
             previewHeight = 0;
         }
 
-        _inspectorLayout.SetRowHeight(0, titleHeight);
-        _inspectorLayout.SetRowHeight(1, previewHeight);
-        _inspectorLayout.SetRowHeight(3, copyHeight);
-        _inspectorLayout.SetRowHeight(4, hintHeight);
+        _inspectorLayout.SuspendLayout();
+        try
+        {
+            _inspectorLayout.SetRowHeight(0, titleHeight);
+            _inspectorLayout.SetRowHeight(1, previewHeight);
+            _inspectorLayout.SetRowHeight(3, copyHeight);
+            _inspectorLayout.SetRowHeight(4, hintHeight);
+        }
+        finally
+        {
+            _inspectorLayout.ResumeLayout(true);
+        }
     }
 
     private void RebuildDynamicFormatLayout()

@@ -300,6 +300,21 @@ public class AppearanceRegressionTests
             _ = overlay.Handle;
             Assert.NotEqual(Cursors.Cross.Handle, overlay.Cursor.Handle);
             Assert.Equal(new Point(16, 16), overlay.Cursor.HotSpot);
+            // The native cursor must draw opaque white, rather than invert the
+            // desktop or depend on how Windows interprets a color cursor's alpha.
+            using (var cursorImage = new Bitmap(32, 32))
+            using (var cursorGraphics = Graphics.FromImage(cursorImage))
+            {
+                foreach (var background in new[] { Color.Black, Color.Blue })
+                {
+                    cursorGraphics.Clear(background);
+                    overlay.Cursor.Draw(cursorGraphics, new Rectangle(0, 0, 32, 32));
+                    Assert.Equal(Color.White.ToArgb(), cursorImage.GetPixel(16, 16).ToArgb());
+                    Assert.Equal(Color.White.ToArgb(), cursorImage.GetPixel(4, 16).ToArgb());
+                    Assert.Equal(Color.White.ToArgb(), cursorImage.GetPixel(16, 28).ToArgb());
+                    Assert.Equal(background.ToArgb(), cursorImage.GetPixel(0, 0).ToArgb());
+                }
+            }
             using var rendered = new Bitmap(960, 640);
             overlay.DrawToBitmap(rendered, new Rectangle(0, 0, 960, 640));
             Assert.Equal(source.ToArgb(), rendered.GetPixel(20, 500).ToArgb());

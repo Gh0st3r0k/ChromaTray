@@ -34,6 +34,34 @@ public class FormConstructionTests
     }
 
     [Fact]
+    public void Dashboard_ReopeningFromMinimizedRestoresUsableLayout()
+    {
+        OverlayKeyboardTests.OnSta(() =>
+        {
+            using var dashboard = new MainDashboardForm(new AppSettings());
+            dashboard.Show();
+            System.Windows.Forms.Application.DoEvents();
+            var originalSize = dashboard.ClientSize;
+            var formats = dashboard.Controls.Find("ColorFormats", true).Single();
+            var rows = formats.Controls.Cast<System.Windows.Forms.Control>().ToArray();
+            var reopen = typeof(MainDashboardForm).GetMethod("ShowMainWindow",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+            for (int i = 0; i < 3; i++)
+            {
+                dashboard.WindowState = System.Windows.Forms.FormWindowState.Minimized;
+                dashboard.Hide();
+                reopen.Invoke(dashboard, null);
+                System.Windows.Forms.Application.DoEvents();
+                Assert.True(dashboard.Visible);
+                Assert.Equal(System.Windows.Forms.FormWindowState.Normal, dashboard.WindowState);
+                Assert.Equal(originalSize, dashboard.ClientSize);
+                Assert.Equal(rows, formats.Controls.Cast<System.Windows.Forms.Control>().ToArray());
+                Assert.All(rows, row => Assert.True(row.Width > 0 && row.Height > 0));
+            }
+        });
+    }
+
+    [Fact]
     public void DashboardAndSettings_CanCreateWindowsHandlesAndDispose()
     {
         Exception? failure = null;

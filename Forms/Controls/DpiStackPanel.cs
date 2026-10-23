@@ -55,29 +55,41 @@ internal sealed class DpiStackPanel(int[] rowHeights) : TableLayoutPanel
 
     protected override void OnLayout(LayoutEventArgs levent)
     {
-        if (!_isUpdatingLayout)
+        if (_isUpdatingLayout)
         {
-            _isUpdatingLayout = true;
-            try
-            {
-                int Scale(int value) => (int)Math.Round(value * StudioTheme.Dpi(this) / 96f);
-                Padding ScalePadding(Padding padding) => new(Scale(padding.Left), Scale(padding.Top), Scale(padding.Right), Scale(padding.Bottom));
-                Padding = ScalePadding(_logicalPadding);
-                for (int row = 0; row < Math.Min(rowHeights.Length, RowStyles.Count); row++)
-                {
-                    if (rowHeights[row] >= 0)
-                    {
-                        RowStyles[row].Height = Scale(rowHeights[row]);
-                    }
-                }
-                foreach (var (control, margin) in _margins)
-                    control.Margin = ScalePadding(margin);
-            }
-            finally
-            {
-                _isUpdatingLayout = false;
-            }
+            return;
         }
-        base.OnLayout(levent);
+
+        _isUpdatingLayout = true;
+        SuspendLayout();
+        try
+        {
+            int Scale(int value) => (int)Math.Round(value * StudioTheme.Dpi(this) / 96f);
+            Padding ScalePadding(Padding padding) => new(Scale(padding.Left), Scale(padding.Top), Scale(padding.Right), Scale(padding.Bottom));
+            Padding = ScalePadding(_logicalPadding);
+            for (int row = 0; row < Math.Min(rowHeights.Length, RowStyles.Count); row++)
+            {
+                if (rowHeights[row] >= 0)
+                {
+                    RowStyles[row].Height = Scale(rowHeights[row]);
+                }
+            }
+            foreach (var (control, margin) in _margins)
+                control.Margin = ScalePadding(margin);
+        }
+        finally
+        {
+            // Updating metrics queues layout requests. Consume them in the single
+            // base pass below, keeping the guard active while children are laid out.
+            ResumeLayout(false);
+        }
+        try
+        {
+            base.OnLayout(levent);
+        }
+        finally
+        {
+            _isUpdatingLayout = false;
+        }
     }
 }
