@@ -173,6 +173,25 @@ Use the [Windows checklist](WINDOWS-CHECKLIST.md) for real desktop capture and d
 
 When reporting a problem, include the commit or release, Windows version, monitor arrangement and scaling, build command, exact error, and steps to reproduce. Crop screenshots to the relevant area.
 
+## Startup and tray restore timings
+
+To investigate a slow window, exit the existing tray instance and enable optional
+local diagnostics in Command Prompt before launching a fresh build:
+
+```cmd
+set "CHROMATRAY_PERF_LOG=%TEMP%\ChromaTray-performance.log"
+bin\Release\net8.0-windows\ChromaTray.exe
+```
+
+Close the dashboard and reopen it from the tray several times, then inspect the
+log. It records dashboard construction, synchronous restore, and elapsed time to
+the next UI idle event. Startup timing starts in managed `Main`; it excludes
+process creation and .NET runtime loading. Idle is a message-loop measurement,
+not a guarantee that Windows has presented the frame. Logs contain timestamps,
+process IDs and durations, without settings or captured screen contents.
+Logging is disabled unless `CHROMATRAY_PERF_LOG` is set. To disable it for the
+next launch, run `set CHROMATRAY_PERF_LOG=` and exit the current tray instance.
+
 ## Managed Linux workspace
 
 In the prepared cloud workspace, the SDK is installed under `/workspace/.dotnet`:

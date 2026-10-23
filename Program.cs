@@ -1,4 +1,5 @@
 using ChromaTray.Forms;
+using ChromaTray.Services;
 
 namespace ChromaTray;
 
@@ -10,6 +11,7 @@ internal static class Program
     [STAThread]
     static void Main()
     {
+        long startupStarted = UiPerformance.Start();
         ApplicationConfiguration.Initialize();
 
         // Multiple instances would compete for global hotkeys and create duplicate tray icons.
@@ -24,6 +26,8 @@ internal static class Program
             return;
         }
 
-        Application.Run(new MainDashboardForm());
+        using var dashboard = new MainDashboardForm();
+        dashboard.Shown += (_, _) => UiPerformance.RecordWhenIdle(dashboard, "startup-to-idle", startupStarted);
+        Application.Run(dashboard);
     }
 }

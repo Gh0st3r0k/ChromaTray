@@ -34,6 +34,7 @@ public partial class MainDashboardForm : Form
 
     internal MainDashboardForm(AppSettings initialSettings)
     {
+        long constructionStarted = UiPerformance.Start();
         _settings = initialSettings;
         ConfigureWindow();
         _appIcon = CreateDynamicAppIcon();
@@ -52,6 +53,7 @@ public partial class MainDashboardForm : Form
         {
             ResumeLayout(false);
         }
+        UiPerformance.Record("dashboard-construction", constructionStarted);
     }
 
     private NotifyIcon CreateTrayIcon()
@@ -98,7 +100,9 @@ public partial class MainDashboardForm : Form
 
     protected override void OnShown(EventArgs e)
     {
+        long shownStarted = UiPerformance.Start();
         base.OnShown(e);
+        UiPerformance.RecordWhenIdle(this, "shown-to-idle", shownStarted);
         // Reopening from the tray must reuse the existing controls and palette.
         if (_hasInitializedWindow)
         {
@@ -232,6 +236,7 @@ public partial class MainDashboardForm : Form
 
     private void ShowMainWindow()
     {
+        long restoreStarted = UiPerformance.Start();
         // Batch layout while restoring. A hidden HWND must be shown before
         // changing WindowState: Show can otherwise reapply its minimized state.
         SuspendLayout();
@@ -251,6 +256,8 @@ public partial class MainDashboardForm : Form
             ResumeLayout(true);
         }
         Activate();
+        UiPerformance.Record("restore-synchronous", restoreStarted);
+        UiPerformance.RecordWhenIdle(this, "restore-to-idle", restoreStarted);
     }
 
     private void ExitApplication()
