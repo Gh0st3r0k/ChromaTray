@@ -68,11 +68,16 @@ internal sealed class PaletteGeneratorForm : Form
         copyCss.Click += (_, _) => CopyText(":root {\n" + string.Join("\n", _colors.Select((color, i) => $"  --color-{i + 1}: {ColorDetails.FromColor(color).Hex};")) + "\n}");
         _editors.Add(copyCss);
         _generate.Click += async (_, _) => await GenerateAsync();
-        var actions = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, Margin = Padding.Empty };
-        actions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 70));
+        var actions = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 3, Margin = Padding.Empty };
+        actions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40));
         actions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
         actions.Controls.Add(_generate, 0, 0);
         actions.Controls.Add(copyCss, 1, 0);
+        actions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
+        var websitePreview = new StudioButton { Text = "Website preview", Name = "WebsitePreviewButton", Dock = DockStyle.Fill };
+        websitePreview.Click += (_, _) => new WebsitePreviewForm(_colors).Show(this);
+        actions.Controls.Add(websitePreview, 2, 0);
+        _editors.Add(websitePreview);
         var notice = StudioTheme.Label("Colormind · Online · Sends five RGB positions only. Free for personal / non-commercial use.", StudioTheme.Small, StudioTheme.Muted);
         var root = StudioTheme.Stack((StudioTheme.Label("PALETTE GENERATOR", StudioTheme.Heading), 48), (columns, -1), (actions, 48), (_status, 44), (notice, 32));
         root.BackColor = StudioTheme.Canvas;
@@ -170,14 +175,7 @@ internal sealed class PaletteGeneratorForm : Form
         try
         {
             Owner?.Hide();
-            ScreenOverlayForm overlay;
-            using (var hidden = new DesktopCaptureScope(this))
-            {
-                await hidden.WaitForDesktopAsync();
-                if (_lifetime.IsCancellationRequested)
-                    return;
-                overlay = new ScreenOverlayForm(CaptureMode.Point);
-            }
+            var overlay = await DesktopPicker.CreateOverlayAsync(this, CaptureMode.Point, _lifetime.Token);
             using (overlay)
             {
                 if (overlay.ShowDialog() == DialogResult.OK && overlay.PickedPointColor is { } color)
@@ -185,6 +183,10 @@ internal sealed class PaletteGeneratorForm : Form
                     ApplyPickedColor(slot, color);
                 }
             }
+        }
+        catch (OperationCanceledException) when (_lifetime.IsCancellationRequested)
+        {
+            // The generator was closed while the desktop was being prepared.
         }
         catch (Exception ex) when (ex is ExternalException or InvalidOperationException or ArgumentException)
         {

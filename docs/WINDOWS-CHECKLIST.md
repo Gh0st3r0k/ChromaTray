@@ -69,3 +69,10 @@ Record the commit or release, Windows version, monitor arrangement, display scal
 Include the exact build, Windows version, display configuration, action, expected behavior, actual behavior, and error text. For rendering issues, attach a cropped screenshot showing the relevant controls. For color accuracy, include the expected RGB, sampled RGB, coordinates, and grouping state. Avoid capturing unrelated private desktop content.
 
 Automated Windows tests and preview PNGs complement this checklist. They do not replace testing real desktop composition, mixed-display scaling, runtime installation, or the release files themselves.
+
+## Palette generator and website preview
+
+- [ ] Open the generator from the tray and from **Suggest palette**. Pick a pixel for a slot; the generator must survive hiding, return with that exact color locked, and make no request until **Generate** is pressed.
+- [ ] Cancel the picker with Escape: existing colors and lock states remain unchanged and the original windows return.
+- [ ] Open **Website preview** from the generator and independently from the tray. Reassign each role and confirm that two roles swap colors immediately.
+- [ ] Copy role CSS and confirm that named variables match the preview. Verify the sample at 100%, 125%, 150%, and 200% DPI.

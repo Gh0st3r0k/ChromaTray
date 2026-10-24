@@ -20,7 +20,9 @@ Each position has **Pick pixel**, which opens the existing screen picker. Confir
 with Enter or a click; Escape cancels. A confirmed pixel replaces and locks that
 position. It does **not** start a request: press **Generate** when ready. The main
 window and generator are hidden during capture, then restored. Dashboard capture
-hotkeys are paused while the modal generator is open.
+requests are ignored while the generator is open. The generator is a modeless
+owned window so hiding it for capture does not end its lifetime. Both dashboard
+and generator use the same desktop preparation and selection overlay.
 
 Copy individual HEX values or the complete palette as CSS variables. Existing
 palette copying in the dashboard continues to work independently. A failed request
@@ -43,3 +45,23 @@ HTTP contract tests use simulated responses. Live HTTPS requests were blocked by
 this development environment's egress policy, so end-to-end service availability
 must be verified on an allowed network. A blocked request here does not establish
 that Colormind itself rejects requests or lacks HTTPS support.
+
+## Website preview and role assignment
+
+Open **Website preview** from the generator to preview its five current colors,
+or choose **Website preview…** from the tray menu to preview the dashboard palette
+without a network request. If the dashboard has fewer than five colors, remaining
+positions use theme colors. Each preview is an independent snapshot; reopen it to
+use a newly generated palette.
+
+The local sample landing page contains a header, hero text, button and two cards.
+Assign colors to **Background**, **Text**, **Cards / surfaces**, **Primary button**,
+and **Accent** using the side panel. Selecting a color already assigned to another
+role swaps those two assignments, preserving all five palette positions. Changes
+update the preview immediately without modifying the source palette or calling
+Colormind. Role assignments last for the lifetime of that preview window.
+
+**Copy role CSS** exports named CSS variables. Text/background contrast displays
+the WCAG ratio and AA result for normal text (4.5:1). This is not a full accessibility
+audit of every component. Button text chooses black or white for better contrast.
+The preview is drawn locally; it does not open, download, or publish a real website.

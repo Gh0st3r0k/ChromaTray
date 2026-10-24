@@ -15,7 +15,7 @@ public partial class MainDashboardForm
     // Async entry point for buttons and Win32 hotkeys. Handle expected failures here.
     private async void StartCapture(CaptureMode mode)
     {
-        if (_isCapturing || _isSettingsDialogOpen || _isExiting)
+        if (_isCapturing || _isSettingsDialogOpen || _isExiting || _paletteGenerator is { IsDisposed: false })
         {
             return;
         }
@@ -26,17 +26,7 @@ public partial class MainDashboardForm
         {
             _trayIcon.ContextMenuStrip?.Close();
             _exportFormatSelect.CloseDropDown();
-            ScreenOverlayForm overlay;
-            using (var hidden = new DesktopCaptureScope(this))
-            {
-                // Hide the window and wait for DWM to finish its frame before taking the snapshot.
-                await hidden.WaitForDesktopAsync();
-                if (IsDisposed || _isExiting)
-                {
-                    return;
-                }
-                overlay = new ScreenOverlayForm(mode);
-            }
+            var overlay = await DesktopPicker.CreateOverlayAsync(this, mode);
             using var captured = overlay;
             var result = overlay.ShowDialog();
             if (result != DialogResult.OK)

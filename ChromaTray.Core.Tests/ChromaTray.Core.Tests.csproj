@@ -19,6 +19,7 @@
     <Compile Include="../Models/ColorModels.cs" Link="Source/ColorModels.cs" />
     <Compile Include="../Services/PaletteExporter.cs" Link="Source/PaletteExporter.cs" />
     <Compile Include="../Services/PaletteHistogram.cs" Link="Source/PaletteHistogram.cs" />
+    <Compile Include="../Services/WebsitePalette.cs" Link="Source/WebsitePalette.cs" />
     <Compile Include="../Services/ColormindClient.cs" Link="Source/ColormindClient.cs" />
     <Compile Include="../Services/PixelNavigator.cs" Link="Source/PixelNavigator.cs" />
     <Compile Include="../ChromaTray.Tests/ColorModelsTests.cs" Link="ColorModelsTests.cs" />

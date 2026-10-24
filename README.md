@@ -149,7 +149,7 @@ Browse the published guides in [English](https://gh0st3r0k.github.io/ChromaTray/
 | --- | --- |
 | [Running locally](docs/RUNNING.md) | Install prerequisites, run the app, publish executables, and resolve common issues. |
 | [Development guide](docs/DEVELOPMENT.md) | Understand the code, capture lifecycle, tests, documentation builds, and release workflow. |
-| [Palette generator](docs/PALETTES.md) | Generate five-color palettes with Colormind, locks, and pixel picking. |
+| [Palette generator](docs/PALETTES.md) | Generate palettes, pick pixels, and preview website color roles. |
 | [Development roadmap](docs/ROADMAP.md) | Themes, cross-platform support, technology evaluation, and web-design palettes. |
 | [Windows checklist](docs/WINDOWS-CHECKLIST.md) | Verify real desktop capture, mixed DPI, keyboard navigation, and appearance before a release. |
 | [DocFX source](docs/site/index.md) | Read the site content directly in the repository. |

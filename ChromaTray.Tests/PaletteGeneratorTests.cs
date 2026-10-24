@@ -79,6 +79,56 @@ public class PaletteGeneratorTests
         });
     }
 
+    [Fact]
+    public void DashboardGeneratorSurvivesHidingForPixelCapture()
+    {
+        OverlayKeyboardTests.OnSta(() =>
+        {
+            using var http = new HttpClient(new RecordingHandler());
+            using var dashboard = new MainDashboardForm(new ChromaTray.Models.AppSettings());
+            dashboard.Show();
+            dashboard.OpenPaletteGenerator(Color.Red, new ColormindClient(http));
+            var generator = Assert.Single(dashboard.OwnedForms.OfType<PaletteGeneratorForm>());
+            Application.DoEvents();
+            generator.Hide();
+            dashboard.Hide();
+            Application.DoEvents();
+            Assert.False(generator.IsDisposed);
+            Assert.Same(dashboard, generator.Owner);
+            dashboard.Show();
+            generator.Show();
+            Assert.True(generator.Visible);
+            Assert.False(generator.Modal);
+            generator.Close();
+        });
+    }
+
+    [Fact]
+    public void WebsitePreviewSwapsRolesAndRendersIndependently()
+    {
+        OverlayKeyboardTests.OnSta(() =>
+        {
+            using var form = new WebsitePreviewForm([Color.Red, Color.Green, Color.Blue, Color.White, Color.Black]);
+            form.Show();
+            Application.DoEvents();
+            var background = (ComboBox)form.Controls.Find("WebsiteRole0", true).Single();
+            var text = (ComboBox)form.Controls.Find("WebsiteRole1", true).Single();
+            Assert.Equal(4, background.SelectedIndex);
+            background.SelectedIndex = 0;
+            Assert.Equal(4, text.SelectedIndex);
+            Assert.Equal(0, background.SelectedIndex);
+            var canvas = form.Controls.Find("WebsiteCanvas", true).Single();
+            using var image = new Bitmap(canvas.Width, canvas.Height);
+            canvas.DrawToBitmap(image, canvas.ClientRectangle);
+            Assert.Equal(Color.Red.ToArgb(), image.GetPixel(2, 2).ToArgb());
+            if (Environment.GetEnvironmentVariable("CHROMATRAY_UI_PREVIEW_DIR") is { Length: > 0 } directory)
+            {
+                Directory.CreateDirectory(directory);
+                image.Save(Path.Combine(directory, "website-preview-role-swap.png"));
+            }
+        });
+    }
+
     private static void PumpUntil(Func<bool> ready)
     {
         var timer = Stopwatch.StartNew();
