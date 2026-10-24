@@ -30,4 +30,4 @@ Požadavky odesílat pouze na výslovný pokyn uživatele a předávat vybrané 
 
 Zveřejněné podmínky Colormind dovolují bezplatné osobní a nekomerční použití API; pro komerční aplikaci je nutné kontaktovat vlastníka služby. Licence MIT ChromaTray neposkytuje další práva k externím API. Tyto samostatné podmínky uvést v dokumentaci. Před integrací ověřit podporu HTTPS a aktuální podmínky služby. Uzamčené barvy zachovat přesně v aplikaci: Colormind může vstupní barvy mírně změnit.
 
-Jde o plán: výběr poskytovatele ani ukládání klíčů zatím nejsou implementovány.
+Větev `colormind-palettes` implementuje generátor Colormind. Výběr mezi více poskytovateli a ukládání osobních klíčů zůstávají v plánu.

@@ -70,6 +70,7 @@ public partial class MainDashboardForm : Form
         _trayPointItem.Click += (_, _) => StartCapture(CaptureMode.Point);
         _trayRegionItem.Click += (_, _) => StartCapture(CaptureMode.Region);
         trayMenu.Items.AddRange([_trayPointItem, _trayRegionItem, new ToolStripSeparator()]);
+        trayMenu.Items.Add("Palette generator…", null, (_, _) => OpenPaletteGenerator());
         trayMenu.Items.Add("Settings…", null, (_, _) => OpenSettingsDialog());
         trayMenu.Items.Add("Open dashboard", null, (_, _) => ShowMainWindow());
         trayMenu.Items.Add("Exit", null, (_, _) => ExitApplication());

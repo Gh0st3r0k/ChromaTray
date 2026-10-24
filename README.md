@@ -28,7 +28,7 @@
 
 <p align="center"><sub>Feature illustration; not a screenshot of the running application.</sub></p>
 
-ChromaTray is a Windows tray app for bringing screen colors into your code and design work. Pick one pixel to copy its value, or select a rectangle to discover its most frequent colors and their shares. Everything runs locally, without an account, API key, or backend service.
+ChromaTray is a Windows tray app for bringing screen colors into your code and design work. Pick one pixel to copy its value, or select a rectangle to discover its most frequent colors and their shares. Screen capture and analysis run locally without an account or API key. The optional [Colormind palette generator](docs/PALETTES.md) requires Internet access.
 
 <details>
 <summary>Contents</summary>
@@ -149,6 +149,7 @@ Browse the published guides in [English](https://gh0st3r0k.github.io/ChromaTray/
 | --- | --- |
 | [Running locally](docs/RUNNING.md) | Install prerequisites, run the app, publish executables, and resolve common issues. |
 | [Development guide](docs/DEVELOPMENT.md) | Understand the code, capture lifecycle, tests, documentation builds, and release workflow. |
+| [Palette generator](docs/PALETTES.md) | Generate five-color palettes with Colormind, locks, and pixel picking. |
 | [Development roadmap](docs/ROADMAP.md) | Themes, cross-platform support, technology evaluation, and web-design palettes. |
 | [Windows checklist](docs/WINDOWS-CHECKLIST.md) | Verify real desktop capture, mixed DPI, keyboard navigation, and appearance before a release. |
 | [DocFX source](docs/site/index.md) | Read the site content directly in the repository. |

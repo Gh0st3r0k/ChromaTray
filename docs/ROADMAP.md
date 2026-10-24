@@ -49,5 +49,5 @@ does not grant additional rights to external APIs. Document these separate terms
 Before integration, verify HTTPS support and current service conditions. Preserve
 locked colors locally because Colormind may slightly alter supplied colors.
 
-This section describes planned functionality; provider selection and key storage
-are not implemented yet.
+The `colormind-palettes` branch implements the [Colormind generator](https://github.com/Gh0st3r0k/ChromaTray/blob/colormind-palettes/docs/PALETTES.md).
+Selection between multiple providers and personal-key storage remain future work.

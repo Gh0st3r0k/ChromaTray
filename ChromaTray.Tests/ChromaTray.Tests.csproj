@@ -23,6 +23,7 @@
     <ProjectReference Include="..\ChromaTray.csproj" />
     <Compile Include="../ChromaTray.Core.Tests/PaletteHistogramTests.cs" Link="PaletteHistogramTests.cs" />
     <Compile Include="../ChromaTray.Core.Tests/ExportEdgeCaseTests.cs" Link="ExportEdgeCaseTests.cs" />
+    <Compile Include="../ChromaTray.Core.Tests/ColormindClientTests.cs" Link="ColormindClientTests.cs" />
     <Compile Include="../ChromaTray.Core.Tests/PixelNavigatorTests.cs" Link="PixelNavigatorTests.cs" />
   </ItemGroup>
 

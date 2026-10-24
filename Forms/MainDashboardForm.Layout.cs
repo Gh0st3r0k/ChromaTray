@@ -309,12 +309,37 @@ public partial class MainDashboardForm
         var copyFormats = new StudioButton
         {
             Name = "CopyFormatsButton",
-            Text = "Copy active formats",
+            Text = "Copy formats",
             Primary = true,
             Glyph = StudioGlyph.Copy,
             Margin = new Padding(0, 8, 0, 0)
         };
         copyFormats.Click += (_, _) => CopySingleColorSummary();
+        var suggest = new StudioButton
+        {
+            Name = "SuggestPaletteButton",
+            Text = "Suggest palette",
+            Dock = DockStyle.Fill,
+            AccessibleName = "Generate a palette from the selected color"
+        };
+        suggest.Click += (_, _) =>
+        {
+            if (_paletteGrid.SelectedColor is { } selected)
+            {
+                OpenPaletteGenerator(selected.RawColor);
+            }
+        };
+        var inspectorActions = new TableLayoutPanel
+        {
+            ColumnCount = 2,
+            Dock = DockStyle.Fill,
+            Margin = Padding.Empty,
+            BackColor = StudioTheme.Surface
+        };
+        inspectorActions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 55));
+        inspectorActions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 45));
+        inspectorActions.Controls.Add(copyFormats, 0, 0);
+        inspectorActions.Controls.Add(suggest, 1, 0);
         var formatsViewport = new StudioScrollViewport
         {
             Name = "FormatsViewport",
@@ -324,7 +349,7 @@ public partial class MainDashboardForm
             (_inspectorTitleLabel, 30),
             (_colorPreview, 128),
             (formatsViewport, -1),
-            (copyFormats, 58),
+            (inspectorActions, 58),
             (StudioTheme.Label("All enabled formats. One click to copy.", StudioTheme.Small, StudioTheme.Muted), 28)
         );
         _inspectorLayout.BackColor = StudioTheme.Surface;
