@@ -149,7 +149,7 @@ Browse the published guides in [English](https://gh0st3r0k.github.io/ChromaTray/
 | --- | --- |
 | [Running locally](docs/RUNNING.md) | Install prerequisites, run the app, publish executables, and resolve common issues. |
 | [Development guide](docs/DEVELOPMENT.md) | Understand the code, capture lifecycle, tests, documentation builds, and release workflow. |
-| [Development roadmap](docs/ROADMAP.md) | Themes, cross-platform support, and technology evaluation ideas. |
+| [Development roadmap](docs/ROADMAP.md) | Themes, cross-platform support, technology evaluation, and web-design palettes. |
 | [Windows checklist](docs/WINDOWS-CHECKLIST.md) | Verify real desktop capture, mixed DPI, keyboard navigation, and appearance before a release. |
 | [DocFX source](docs/site/index.md) | Read the site content directly in the repository. |
 
@@ -166,7 +166,7 @@ Open `http://localhost:8080`. On Linux/macOS, use `python3` if needed. Generated
 
 ## Development roadmap
 
-Future ideas include light and dark themes, custom interface colors, Windows/Linux/macOS support, and evaluating alternative technologies with a prototype. See the [development roadmap](docs/ROADMAP.md) for scope and tradeoffs; these are ideas rather than scheduled commitments.
+Future ideas include light and dark themes, custom interface colors, Windows/Linux/macOS support, evaluating alternative technologies with a prototype, and five-color palettes for web design. See the [development roadmap](docs/ROADMAP.md) for scope and tradeoffs; these are ideas rather than scheduled commitments.
 
 ## Build and test
 

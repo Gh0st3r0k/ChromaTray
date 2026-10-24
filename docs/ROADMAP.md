@@ -21,3 +21,11 @@ Evaluate other languages and technologies with a small prototype. Decide whether
 to rewrite only after comparing startup and restore latency, memory consumption,
 and development effort. A new language alone does not guarantee better performance
 or support for multiple operating systems.
+
+## Palettes for web design
+
+Generate five coordinated colors from a selected color, with the ability to lock
+individual colors and regenerate the rest. Preview the palette on a sample website,
+check text and button contrast, and export CSS variables. These are full design
+palettes, not just lighter or darker shades of one color. Evaluate online generators
+and open-source alternatives before selecting an implementation.
