@@ -21,3 +21,13 @@ Vyhodnotit jiné jazyky a technologie na malém prototypu. O přepsání rozhodn
 ## Palety pro webdesign
 
 Vytvořit pět sladěných barev na základě vybrané barvy, umožnit uzamčení jednotlivých barev a nové generování ostatních. Zobrazit výsledek na ukázkovém webu, ověřovat kontrast textu a tlačítek a exportovat proměnné CSS. Jde o celé designové palety, nejen světlejší či tmavší odstíny jedné barvy. Před výběrem implementace vyhodnotit online generátory a otevřené alternativy.
+
+### Poskytovatelé palet a osobní klíče
+
+Naplánovat nastavení **Zdroj palet**. Prvním kandidátem je Colormind: zveřejněné příklady API nevyžadují účet ani klíč. U dalších poskytovatelů umožnit vlastní API klíč, pokud jej služba podporuje; požadavky se budou účtovat nebo omezovat podle účtu a podmínek uživatele. Nevyžadovat klíč u služeb, které jej nepoužívají.
+
+Požadavky odesílat pouze na výslovný pokyn uživatele a předávat vybrané barvy RGB, nikoli snímky obrazovky. Osobní klíče ukládat do zabezpečeného úložiště operačního systému místo běžného `settings.json`; umožnit smazání a vyloučit klíče z protokolů a exportu.
+
+Zveřejněné podmínky Colormind dovolují bezplatné osobní a nekomerční použití API; pro komerční aplikaci je nutné kontaktovat vlastníka služby. Licence MIT ChromaTray neposkytuje další práva k externím API. Tyto samostatné podmínky uvést v dokumentaci. Před integrací ověřit podporu HTTPS a aktuální podmínky služby. Uzamčené barvy zachovat přesně v aplikaci: Colormind může vstupní barvy mírně změnit.
+
+Jde o plán: výběr poskytovatele ani ukládání klíčů zatím nejsou implementovány.

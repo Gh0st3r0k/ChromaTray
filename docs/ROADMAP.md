@@ -29,3 +29,25 @@ individual colors and regenerate the rest. Preview the palette on a sample websi
 check text and button contrast, and export CSS variables. These are full design
 palettes, not just lighter or darker shades of one color. Evaluate online generators
 and open-source alternatives before selecting an implementation.
+
+### Palette providers and optional personal keys
+
+Plan a **Palette source** setting. Colormind is the initial candidate: its published
+API examples do not require an account or API key. Other providers may support a
+user-supplied personal key, with requests billed or limited under that user's
+account according to the provider's terms. Do not require a key for providers that
+do not use one.
+
+Send requests only after an explicit user action and transmit selected RGB colors,
+not screenshots. Where personal keys are needed, use the operating system's secure
+credential storage rather than plain `settings.json`; allow deletion and exclude
+keys from logs and exports.
+
+Colormind's published terms allow free personal and non-commercial API use;
+commercial applications must contact the service owner. ChromaTray's MIT license
+does not grant additional rights to external APIs. Document these separate terms.
+Before integration, verify HTTPS support and current service conditions. Preserve
+locked colors locally because Colormind may slightly alter supplied colors.
+
+This section describes planned functionality; provider selection and key storage
+are not implemented yet.
